@@ -1,0 +1,9 @@
+[user]
+    name = {{ .name }}
+    email = {{ (onepasswordDetailsFields "Gmail - voidfiles").username.value }}
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = false
