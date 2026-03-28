@@ -20,7 +20,7 @@ export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="{{ .chezmoi.homeDir }}/go/bin:$PATH"
 
 # rye (Python)
-. "$HOME/.rye/env"
+[ -s "$HOME/.rye/env" ] && . "$HOME/.rye/env"
 
 # nvm
 export NVM_DIR="$HOME/.nvm"
