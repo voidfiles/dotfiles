@@ -1,0 +1,1068 @@
+---
+name: summit-notes
+description: Transform multi-day summit, conference, or all-day meeting notes into comprehensive summaries with cross-session themes, decisions, and action items.
+argument-hint: [folder-path] [--days N] [--output path]
+---
+
+# Summit Notes (Multi-Day Event Pipeline)
+
+Transform a folder of meeting transcripts and notes from multi-day events (summits, onsites, conferences) into comprehensive, synthesized documentation.
+
+## Usage
+
+```
+/summit-notes meetings/2026/02/risk-staff-onsite/
+/summit-notes meetings/2026/02/risk-staff-onsite/ --days 3
+/summit-notes meetings/2026/02/risk-staff-onsite/ --output daily/2026/02/05/summit-summary.md
+```
+
+## When to Use This Skill
+
+Use this skill when you have:
+
+- Multiple days of meeting notes from an onsite or summit
+- Many separate session transcripts from a conference
+- All-day event notes that need synthesis
+- A folder with 5+ meeting/session files to consolidate
+
+## Pipeline Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        SUMMIT NOTES DAG                                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   ┌───────────────────── PARALLEL STAGE 1a-d ──────────────────┐            │
+│   │  [1a. DOWNLOAD]  [1b. INVENTORY]  [1c. CONTEXT]  [1d. AGENDA]│           │
+│   └──────────────────────────┬─────────────────────────────────┘            │
+│                              │                                               │
+│                              ▼                                               │
+│   [1e. SEMANTIC CHUNKING] → identify boundaries in large transcripts        │
+│                              │                                               │
+│                              ▼                                               │
+│   [1f. WRITE CHUNKS TO DISK] → create chunks/ directory with files          │
+│                              │                                               │
+│                              ▼                                               │
+│   ┌───────────────────── MAP STAGE 2 ──────────────────────────┐            │
+│   │  For each chunk file (batch API):                           │            │
+│   │  [2. CHUNK SUMMARIZATION] → extract key content per chunk   │            │
+│   └──────────────────────────┬─────────────────────────────────┘            │
+│                              │                                               │
+│                              ▼                                               │
+│   [3. REDUCE SUMMARIES] → concatenate, recursively summarize if needed      │
+│                              │                                               │
+│                              ▼                                               │
+│   [4. CROSS-SESSION SYNTHESIS] → themes across sessions                      │
+│                              │                                               │
+│                              ▼                                               │
+│   [5. ANTAGONISTIC CRITIQUE] → find gaps, hidden themes                      │
+│                              │                                               │
+│                              ▼                                               │
+│   ┌───────────────────── PARALLEL STAGE 6 ─────────────────────┐            │
+│   │  [6a. ACTION ITEMS]  [6b. DECISIONS]  [6c. OPEN QUESTIONS] │            │
+│   └──────────────────────────┬─────────────────────────────────┘            │
+│                              │                                               │
+│                              ▼                                               │
+│   [7. COMPILATION + CONTEXT] → final output with vault links                 │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Directory Structure Created
+
+The skill creates a processing directory structure within the input folder:
+
+```
+{input_folder}/
+├── existing_files.md           ← Original transcripts/notes
+├── downloads/                  ← Created by Stage 1a (external resources)
+│   ├── google_doc_agenda.md
+│   ├── pre_read_architecture.md
+│   └── ...
+├── chunks/                     ← Created by Stage 1f (all content chunked)
+│   ├── 001_welcome_session.md
+│   ├── 002_topic_discussion.md
+│   ├── 003_preread_intro.md    ← Chunked downloaded doc
+│   └── ...
+├── chunk_summaries/            ← Created by Stage 2 (temporary)
+│   ├── 001_welcome_session_summary.md
+│   └── ...
+├── chunk_summary.md            ← Created by Stage 3 (consolidated)
+└── summit_summary.md           ← Final output from Stage 7
+```
+
+**CRITICAL:**
+
+- Use TodoWrite to track progress through ALL stages
+- Execute parallel stages concurrently using multiple Task tool calls
+- Write chunks to disk early (Stage 1f) for idempotency and map-reduce
+- Do NOT skip the critique step (Stage 5)
+
+---
+
+## Stage 1: Discovery (Parallel)
+
+**Goal:** Understand the event scope, files available, and any pre-existing structure.
+
+Execute tasks 1a-1d **concurrently**, then 1e sequentially after:
+
+### 1a. Download External Resources
+
+**Goal:** Pull all referenced external content into the local file structure.
+
+**Process:**
+
+1. **Scan for URLs**: Grep through all files in the folder for URLs
+2. **Identify resource types**:
+   - Google Docs/Sheets/Slides → Use Google Drive tools
+   - Web articles → Use WebFetch
+   - Other URLs → Attempt to fetch content
+3. **Save to local `downloads/` directory**:
+   ```
+   {input_folder}/downloads/
+   ├── google_doc_agenda.md           ← From Google Doc
+   ├── shared_slides_deck.md          ← From Google Slides (text extracted)
+   ├── reference_article.md           ← From web URL
+   └── ...
+   ```
+4. **File naming**: Use slugified title or URL path as filename
+5. **Include metadata header** in each downloaded file:
+   ```markdown
+   ---
+   source_url: https://docs.google.com/document/d/...
+   source_type: google_doc
+   downloaded_at: 2026-02-04T10:30:00Z
+   original_title: "Summit Agenda and Goals"
+   ---
+
+   [Content here...]
+   ```
+
+**URL patterns to look for:**
+- `docs.google.com/document/` → Google Docs
+- `docs.google.com/spreadsheets/` → Google Sheets
+- `docs.google.com/presentation/` → Google Slides
+- `drive.google.com/` → Google Drive files
+- `go/` or `go.corp.stripe.com/` → Golinks (resolve first)
+- `http://` or `https://` → General web URLs
+
+**Idempotency:** If `downloads/` directory exists, check each URL against existing files before re-downloading.
+
+**Output:**
+```
+{input_folder}/downloads/
+├── summit_agenda_goals.md
+├── pre_read_materials.md
+└── reference_doc.md
+```
+
+### 1b. Inventory Files
+
+**Goal:** Catalog all files including downloaded resources.
+
+**Process:**
+
+1. Glob the input folder for all `.md` files **including `downloads/`**
+2. Read first 50 lines of each file to classify:
+   - **Transcript**: Raw meeting transcript
+   - **Notes**: Handwritten/typed notes
+   - **Agenda**: Schedule or topic list
+   - **Summary**: Existing summary (preserve, don't reprocess)
+   - **Downloaded**: External resource pulled in by Stage 1a
+   - **Pre-read**: Background material shared before the event
+3. Create file inventory with classification
+4. **Flag files needing chunking:** If a file is >2000 lines or covers multiple sessions/topics, mark for semantic chunking in Stage 1e
+5. **Include downloaded files** in chunking analysis - they may contain long documents that need splitting
+
+**Inventory output (internal):**
+```yaml
+files:
+  - path: "day1_morning.md"
+    type: "transcript"
+    line_count: 1500
+    needs_chunking: false
+  - path: "downloads/summit_agenda_goals.md"
+    type: "downloaded"
+    source_type: "google_doc"
+    line_count: 200
+    needs_chunking: false
+  - path: "downloads/pre_read_architecture.md"
+    type: "downloaded"
+    source_type: "google_doc"
+    line_count: 3500
+    needs_chunking: true  # Large pre-read doc
+```
+
+### 1c. Extract Event Context
+
+From file names, folder structure, and content:
+
+- **Event name** (e.g., "Risk Staff Engineer Onsite")
+- **Date range** (e.g., Feb 3-5, 2026)
+- **Location** if mentioned
+- **Organizers** if apparent
+
+### 1d. Agenda/Schedule Scan
+
+If agenda file exists:
+
+- Extract session names and times
+- Map files to scheduled sessions
+- Identify sessions without notes (gaps)
+
+### 1e. Semantic Chunking (for large files)
+
+**When to chunk:** Any file (transcript, downloaded doc, pre-read) that is >2000 lines OR covers multiple sessions/topics.
+
+**Files to analyze:**
+- Large transcripts from the input folder
+- Large downloaded documents from `downloads/`
+- Any file flagged `needs_chunking: true` in Stage 1b inventory
+
+**Semantic chunking strategy** (in priority order):
+
+1. **Timestamp boundaries:** Look for time markers like `[10:30 AM]`, `10:30:`, or spoken references ("Let's break for lunch", "Back from break")
+
+2. **Agenda-aligned splitting:** If agenda exists, find where each scheduled topic begins:
+   - Search for topic keywords from agenda
+   - Look for facilitator announcements ("Now we'll discuss...", "Moving to Topic 2...")
+   - Match speaker changes to known session leads
+
+3. **Topic shift detection:** When no timestamps/agenda, identify semantic boundaries:
+   - Major speaker changes (new primary voice)
+   - Explicit transitions ("Switching gears...", "Next item...", "Let's move on to...")
+   - Long pauses indicated by `[pause]`, `[break]`, or time gaps
+   - Subject matter shifts (technical → organizational, product A → product B)
+
+4. **Context-preserving chunks:** When splitting:
+   - Include 5-10 lines of overlap at boundaries
+   - Preserve speaker context at chunk start
+   - Note in chunk header what preceded it
+   - Target chunks of 500-1500 lines (30-90 min of discussion)
+
+**Chunking analysis output (internal):**
+```yaml
+chunked_files:
+  - original: "day1_full_transcript.md"
+    chunks:
+      - chunk_id: "day1_chunk_1"
+        lines: "1-650"
+        session_guess: "Welcome/Agenda Setting"
+        boundary_type: "timestamp"
+        boundary_marker: "[10:45 AM] - Break"
+      - chunk_id: "day1_chunk_2"
+        lines: "640-1400"
+        session_guess: "Topic 1A Discussion"
+        boundary_type: "topic_shift"
+        boundary_marker: "Caleb: 'Let's start with the Standards discussion'"
+```
+
+**CRITICAL:** Semantic chunking analysis happens BEFORE Stage 1f. The actual file writing happens in Stage 1f.
+
+### 1f. Write Chunks to File System
+
+**Purpose:** Persist chunks to disk early for idempotent processing and map-reduce summarization.
+
+**When this step runs:** After 1e completes semantic boundary detection.
+
+**Process:**
+
+1. Create `chunks/` directory in the input folder
+2. For each identified chunk (from 1e analysis OR each small file):
+   - **Transcripts**: Write chunk content with session metadata
+   - **Downloaded docs**: Write chunk content with source URL and original context
+   - **Small files**: Copy directly to `chunks/` with metadata header
+3. Include metadata header with source file, line range, and boundary info
+4. Include 5-10 lines of overlap at boundaries for context
+5. Track chunk manifest for later stages
+
+**Sources to process:**
+- Transcript files from input folder
+- Downloaded files from `downloads/`
+- Any other `.md` files in the input folder (except summaries)
+
+**Chunk file format (for transcripts):**
+```markdown
+---
+source_file: day1_full_transcript.md
+source_type: transcript
+line_range: 1-650
+session_name: Welcome/Agenda Setting
+boundary_type: timestamp
+boundary_marker: "[10:45 AM] - Break"
+speakers: ["Alex Kessinger", "Mike Gottlieb"]
+estimated_duration: 45 min
+---
+
+# Welcome/Agenda Setting
+
+[Chunk content here...]
+```
+
+**Chunk file format (for downloaded docs):**
+```markdown
+---
+source_file: downloads/pre_read_architecture.md
+source_type: downloaded
+source_url: https://docs.google.com/document/d/...
+original_title: "Architecture Pre-Read"
+line_range: 1-800
+section_name: "Introduction and Background"
+boundary_type: header
+boundary_marker: "## Background"
+---
+
+# Architecture Pre-Read: Introduction and Background
+
+[Chunk content here...]
+```
+
+**File naming convention:**
+- `001_welcome_agenda_setting.md` (transcript chunk)
+- `002_topic_1a_discussion.md` (transcript chunk)
+- `003_preread_architecture_intro.md` (downloaded doc chunk)
+- `004_preread_architecture_design.md` (downloaded doc chunk)
+- etc.
+
+**For files that don't need chunking:**
+- Small session files (<1000 lines) are copied directly to `chunks/` with metadata header
+- Small downloaded files are copied with their source URL preserved
+- File name becomes `{index:03d}_{slugified_original_name}.md`
+
+**Chunk constraints:**
+- Maximum chunk size: 2000 lines (to fit in LLM context during summarization)
+- Minimum chunk size: 100 lines (avoid fragmentation)
+- If chunk would be too large, use next header level to subdivide
+
+**Idempotency:** If `chunks/` directory exists with files, skip this step and use existing chunks.
+
+**Output:**
+```
+{input_folder}/chunks/
+├── 001_welcome_agenda_setting.md
+├── 002_topic_1a_discussion.md
+├── 003_topic_1b_review.md
+└── ...
+```
+
+### Stage 1 Output (internal)
+
+```yaml
+discovery:
+  event_name: "Risk Staff Engineer Onsite"
+  date_range: "Feb 3-5, 2026"
+  location: "SSF"
+  organizers: ["Alex Kessinger", "Mike Gottlieb"]
+
+  files:
+    - path: "day1_morning.md"
+      type: "transcript"
+      session: "Topic 1A Discussion"
+      estimated_duration: "2 hours"
+      line_count: 1500
+    - path: "agenda.md"
+      type: "agenda"
+
+  downloaded_files:
+    - path: "downloads/summit_agenda_goals.md"
+      source_url: "https://docs.google.com/document/d/..."
+      source_type: "google_doc"
+      original_title: "Summit Agenda and Goals"
+      line_count: 200
+    - path: "downloads/pre_read_architecture.md"
+      source_url: "https://docs.google.com/document/d/..."
+      source_type: "google_doc"
+      original_title: "Architecture Pre-Read"
+      line_count: 3500
+      needs_chunking: true
+
+  chunks_created:
+    - path: "chunks/001_welcome_agenda_setting.md"
+      source_file: "day1_full_transcript.md"
+      source_type: "transcript"
+    - path: "chunks/002_topic_1a_discussion.md"
+      source_file: "day1_full_transcript.md"
+      source_type: "transcript"
+    - path: "chunks/003_preread_architecture_intro.md"
+      source_file: "downloads/pre_read_architecture.md"
+      source_type: "downloaded"
+    - path: "chunks/004_preread_architecture_design.md"
+      source_file: "downloads/pre_read_architecture.md"
+      source_type: "downloaded"
+
+  sessions_without_notes: ["Career Growth Discussion"]
+
+  agenda_structure:
+    day1:
+      - time: "9-10am"
+        session: "Welcome/Agenda"
+      - time: "10am-12pm"
+        session: "Topic 1A"
+```
+
+Mark Stage 1 complete in TodoWrite before proceeding.
+
+---
+
+## Stage 2: Chunk Summarization (Map Phase)
+
+**Goal:** Generate structured summaries for each chunk file using batch/parallel processing.
+
+**IMPORTANT:** This is the MAP phase of a map-reduce pattern. Process all chunks concurrently.
+
+### Summarization Process
+
+1. **Read all chunk files** from `chunks/` directory
+2. **Build prompts** for each chunk with event context
+3. **Process in parallel** using multiple Task agents OR batch API
+4. **Save summaries** to `chunk_summaries/` directory
+
+### Per-Chunk Extraction Prompt
+
+For each chunk file, extract:
+
+```
+You are analyzing a transcript chunk from a multi-day summit/event.
+
+<event_context>
+Event: {event_name}
+Dates: {date_range}
+Location: {location}
+This chunk: {chunk_session_name} (from {source_file})
+</event_context>
+
+<chunk_content>
+{chunk_markdown_content}
+</chunk_content>
+
+Extract the following in structured format:
+
+1. **Session Summary** (2-3 paragraphs): What was discussed, key outcomes
+2. **Speakers**: List speakers and their approximate contribution
+3. **Key Quotes**: ALL notable quotes with speaker attribution (be generous)
+4. **Themes**: Topics/themes discussed and whether decisions were made
+5. **Decisions**: Any decisions made, who made them, rationale
+6. **Action Items**: Tasks assigned with owners (distinguish commitments from suggestions)
+7. **Open Questions**: Unresolved questions raised
+8. **Connections**: References to other sessions or topics
+
+Format as YAML with clear structure.
+```
+
+### Per-Chunk Summary Output
+
+Save to `chunk_summaries/{chunk_filename}_summary.md`:
+
+```yaml
+chunk_file: "001_welcome_agenda_setting.md"
+session_name: "Welcome/Agenda Setting"
+source_file: "day1_full_transcript.md"
+
+summary: |
+  The welcome session opened with introductions and agenda setting...
+  Key focus areas were identified as...
+
+speakers:
+  - name: "Alex Kessinger"
+    role: "Facilitator"
+    speaking_pct: "30%"
+  - name: "Mike Gottlieb"
+    role: "Contributor"
+    speaking_pct: "20%"
+
+quote_pool:
+  - quote: "Resolution Process ~= Standard"
+    speaker: "Caleb"
+    context: "Key architectural decision"
+    importance: "high"
+  - quote: "We need to think about this holistically"
+    speaker: "Alex"
+    context: "Framing discussion approach"
+    importance: "medium"
+
+themes:
+  - name: "Standards Architecture"
+    had_decision: true
+    decision_summary: "One Resolution Process per Standard"
+  - name: "Domain Data Location"
+    had_decision: false
+    status: "deferred"
+
+decisions:
+  - decision: "One Resolution Process per Standard"
+    made_by: "Group consensus"
+    rationale: "Simplifies the model"
+
+action_items:
+  - task: "Follow up on Fraud Behavior timing"
+    owner: "TBD"
+    priority: "medium"
+    is_commitment: false  # suggestion vs commitment
+
+open_questions:
+  - question: "Should domain-specific data be in CapMan?"
+    raised_by: "Unknown"
+    blocks: "Architecture decisions"
+
+connections:
+  - related_session: "Topic 1A Discussion"
+    relationship: "builds_on"
+```
+
+### Parallel Execution Pattern
+
+**Option A: Multiple Task agents (preferred for <10 chunks)**
+```
+Launch all chunk summarizations at once using multiple Task tool calls:
+- Task 1: Summarize chunks/001_welcome.md
+- Task 2: Summarize chunks/002_topic_1a.md
+- Task 3: Summarize chunks/003_topic_1b.md
+(all launched in a single message)
+```
+
+**Option B: Sequential with Bash (for >10 chunks)**
+```
+For very large summits, process sequentially to avoid context overload:
+for chunk in chunks/*.md; do
+  summarize_chunk "$chunk" > chunk_summaries/"$(basename $chunk .md)_summary.md"
+done
+```
+
+**Idempotency:** If `chunk_summaries/` exists with matching files, skip already-processed chunks.
+
+Mark Stage 2 complete in TodoWrite after ALL chunks are summarized.
+
+---
+
+## Stage 3: Summary Reduction (Reduce Phase)
+
+**Goal:** Consolidate chunk summaries into a single comprehensive summary, recursively reducing if needed.
+
+### Reduction Process
+
+1. **Concatenate** all chunk summaries from `chunk_summaries/`
+2. **Check size**: Estimate token count (~4 chars per token)
+3. **If too large** (>100k tokens): Recursively chunk and re-summarize
+4. **Save** consolidated summary to `chunk_summary.md`
+
+### Size Check
+
+```python
+# Rough estimate
+content = concatenate_all_summaries()
+estimated_tokens = len(content) / 4
+MAX_CONTEXT = 100000  # Leave room for prompts
+
+if estimated_tokens > MAX_CONTEXT:
+    # Need recursive reduction
+    pass
+```
+
+### Recursive Reduction (if needed)
+
+When consolidated summaries exceed context limits:
+
+1. **Split** concatenated summaries into chunks (~75k tokens each)
+2. **Re-summarize** each super-chunk:
+   ```
+   Consolidate these session summaries into a comprehensive summary.
+   Preserve:
+   - All key decisions
+   - Critical quotes
+   - Action items with owners
+   - Major themes and their evolution
+
+   Be thorough but more concise than the input.
+   ```
+3. **Repeat** until final size fits in context
+
+### Output: chunk_summary.md
+
+Save to `{input_folder}/chunk_summary.md`:
+
+```markdown
+# Summit Chunk Summary: {Event Name}
+
+**Event:** {event_name}
+**Dates:** {date_range}
+**Chunks processed:** {N}
+
+## Summary by Session
+
+### 001: Welcome/Agenda Setting
+[Consolidated summary content...]
+
+### 002: Topic 1A Discussion
+[Consolidated summary content...]
+
+---
+
+## All Quotes Collected
+
+| Quote | Speaker | Session | Importance |
+|-------|---------|---------|------------|
+| "Resolution Process ~= Standard" | Caleb | Topic 1A | high |
+| ... | ... | ... | ... |
+
+## All Decisions
+
+| Decision | Session | Made By |
+|----------|---------|---------|
+| One RP per Standard | Topic 1A | Group |
+| ... | ... | ... |
+
+## All Action Items
+
+| Task | Owner | Priority | Session |
+|------|-------|----------|---------|
+| Follow up on timing | TBD | medium | Topic 1A |
+| ... | ... | ... | ... |
+
+## All Open Questions
+
+| Question | Raised In | Blocks |
+|----------|-----------|--------|
+| Domain data location? | Topic 1A | Architecture |
+| ... | ... | ... |
+```
+
+**Idempotency:** If `chunk_summary.md` exists and is newer than all chunk summaries, skip this step.
+
+Mark Stage 3 complete in TodoWrite before proceeding.
+
+---
+
+## Stage 4: Cross-Session Synthesis
+
+**Goal:** Identify themes that span multiple sessions and track how ideas evolved.
+
+### Theme Synthesis
+
+1. Collect all themes from all sessions
+2. Group related themes across sessions
+3. Track theme evolution:
+   - Where did the topic first appear?
+   - How did thinking evolve?
+   - Was it resolved or still open?
+
+### Cross-Session Patterns
+
+Look for:
+
+- **Recurring topics**: Same theme in multiple sessions
+- **Building blocks**: Later sessions building on earlier decisions
+- **Reversals**: Decisions reconsidered or changed
+- **Connections**: Themes from different sessions that relate
+
+### Stage 4 Output (internal)
+
+```yaml
+cross_session_themes:
+  - theme: "Standards Architecture"
+    sessions: ["Topic 1A", "Resolution Paths Discussion"]
+    evolution:
+      - session: "Topic 1A"
+        state: "Established that Resolution Process ~= Standard"
+      - session: "Resolution Paths"
+        state: "Refined: One RP per Standard, concerns about transactions"
+    current_status: "partially_resolved"
+    key_decisions:
+      - "Justifications at multiple levels"
+      - "One Resolution Process per Standard"
+    open_questions:
+      - "RPs as transaction boxes - state consistency"
+
+  - theme: "V2 and Risk Integration"
+    sessions: ["V2 and Risk", "Capability Hierarchies"]
+    evolution: [...]
+```
+
+Mark Stage 4 complete in TodoWrite before proceeding.
+
+---
+
+## Stage 5: Antagonistic Critique (CRITICAL)
+
+**Goal:** Challenge the synthesis. Find what's missing or wrong.
+
+### The Summit Critique Protocol
+
+Review your cross-session themes and ACTIVELY LOOK FOR PROBLEMS:
+
+#### 1. OMISSIONS - What's Missing?
+
+- Side conversations or hallway discussions that shaped outcomes
+- Topics that were tabled "for later" but never revisited
+- The elephant in the room no one directly addressed
+- Inter-personal dynamics affecting discussions
+- Decisions made implicitly (no one said it but everyone assumed it)
+
+#### 2. THEME RELATIONSHIPS - Are They Connected?
+
+- Are separate themes actually the same underlying issue?
+- Did one session's decision contradict another's?
+- Are there dependencies between themes we didn't capture?
+- What's the hierarchy of importance across themes?
+
+#### 3. HIDDEN THEMES - What's the Subtext?
+
+- Organizational tensions that shaped discussions
+- Political dynamics affecting what got decided (or avoided)
+- Unstated concerns driving surface-level debates
+- What DIDN'T get discussed that probably should have?
+- Who was notably silent and why might that matter?
+
+#### 4. GAPS - What Sessions/Topics Are Missing?
+
+- Scheduled sessions without notes
+- Expected topics that never came up
+- Follow-up discussions that were promised but not captured
+
+### Stage 5 Output (internal)
+
+```yaml
+critique_findings:
+  omissions:
+    - "The tension between moving fast vs. system stability was present but never explicitly addressed"
+    - "Day 3 afternoon session appears to be missing notes"
+
+  theme_relationships:
+    - "Standards Architecture and Capability Hierarchies are deeply connected - both about structuring requirements"
+
+  hidden_themes:
+    - "Implicit decision: prioritize compliance use cases first, extend to other verticals later"
+    - "Tension between teams wanting flexibility vs. consistency"
+
+  gaps:
+    - session: "Career Growth Discussion"
+      status: "notes_missing"
+      impact: "Can't capture mentorship commitments"
+
+refined_themes:
+  - theme: "Compliance-First Platform Strategy"
+    note: "NEW - emerged from critique as implicit decision across multiple sessions"
+```
+
+**If critique found significant issues:** Apply refinements before continuing.
+
+Mark Stage 5 complete in TodoWrite before proceeding.
+
+---
+
+## Stage 6: Structured Extraction (Parallel)
+
+**Goal:** Extract and organize actionable items across all sessions.
+
+Execute these three tasks **concurrently**:
+
+### 6a. Action Items Extraction
+
+For each action item across all sessions:
+
+- **Task:** Clear, actionable description
+- **Owner:** Who's responsible (use [[wiki links]])
+- **Deadline:** If mentioned
+- **Source session:** Where it was assigned
+- **Priority:** urgent | soon | later | ongoing
+- **Supporting quote:** The moment it was assigned
+
+**IMPORTANT:** Distinguish commitments from suggestions:
+
+- "I'll do X" = action item
+- "Maybe we could..." = NOT an action item
+- "We should..." without owner = open question
+
+### 6b. Decisions Log
+
+For each decision across all sessions:
+
+- **Decision:** What was decided
+- **Session:** Where it was made
+- **Made by:** Who made/approved it
+- **Rationale:** Why (in their words)
+- **Alternatives rejected:** What was considered but not chosen
+- **Dependencies:** Other decisions this depends on or enables
+
+### 6c. Open Questions
+
+For each unresolved question:
+
+- **Question:** What remains unanswered
+- **Session:** Where it emerged
+- **Needs answer from:** Who
+- **Blocks:** What it blocks
+- **Priority:** How urgent is resolution
+
+Mark Stage 6 complete in TodoWrite before proceeding.
+
+---
+
+## Stage 7: Compilation + Context
+
+**Goal:** Create final output with vault cross-references.
+
+### Vault Search
+
+Search for relevant context:
+
+1. **People mentioned:** Find notes about key participants
+   - Search for [[Person Name]] mentions
+   - Check person/ folder if exists
+
+2. **Projects discussed:** Find related project notes
+   - Search for project keywords
+   - Check projects/ folder
+
+3. **Previous meetings:** Find related discussions
+   - Same participants
+   - Same topics
+   - Recent meetings in daily/ or meetings/
+
+### Final Compilation
+
+Assemble the final output following the format below.
+
+---
+
+## Output Format
+
+Write the final summit summary to `{input_folder}/summit_summary.md` with this structure:
+
+```markdown
+# [Event Name] Summary
+
+**Dates:** [Date range]
+**Location:** [Location]
+**Organizers:** [[Person 1]], [[Person 2]]
+
+📄 [View detailed chunk summary](chunk_summary.md) | 📁 [Browse chunks](chunks/)
+
+## Executive Summary
+
+[3-5 sentences capturing the summit's most important outcomes]
+
+> "[The single most important quote from the entire event]" — Speaker
+
+**Key outcomes:**
+
+1. [Outcome 1]
+2. [Outcome 2]
+3. [Outcome 3]
+
+## Attendees
+
+| Name         | Team   | Role in Sessions                        |
+| ------------ | ------ | --------------------------------------- |
+| [[Person 1]] | Team A | Led Topic 1, contributed to Topics 2-4  |
+| [[Person 2]] | Team B | Key contributor on Standards discussion |
+
+## Sessions Overview
+
+### Day 1: [Date]
+
+| Time      | Session  | Key Outcome                    |
+| --------- | -------- | ------------------------------ |
+| 9-10am    | Welcome  | Set agenda, prioritized topics |
+| 10am-12pm | Topic 1A | Decided: One RP per Standard   |
+
+### Day 2: [Date]
+
+[Same format]
+
+### Day 3: [Date]
+
+[Same format]
+
+## Cross-Session Themes (Priority Order)
+
+### 🔴 Theme 1: [Highest Priority Theme]
+
+**Priority:** 9/10 — [Rationale]
+**Sessions:** Topic 1A, Resolution Paths, Capability Hierarchies
+
+#### Evolution
+
+1. **[Session 1]:** Initial framing...
+2. **[Session 2]:** Refined to...
+3. **[Session 3]:** Final decision...
+
+#### Key Decisions
+
+- **[Decision]** — Made by [[Person]]
+  > "[Supporting quote]" — Speaker
+
+#### Critical Quotes
+
+> "[Quote 1]" — Speaker
+> **Why it matters:** [Explanation]
+
+#### Related: [[project]], [[concept]]
+
+---
+
+### 🟡 Theme 2: [Medium Priority Theme]
+
+[Same structure]
+
+---
+
+### 🟢 Theme 3: [Lower Priority Theme]
+
+[Same structure]
+
+## Action Items
+
+### 🔴 Urgent (This Week)
+
+- [ ] [Action] — @[[Person]] — Due: [Date]
+  - Source: [Session name]
+    > "[Quote]" — Speaker
+
+### 🟡 Soon (This Month)
+
+- [ ] [Action] — @[[Person]]
+  - Source: [Session name]
+
+### 🟢 Later / Ongoing
+
+- [ ] [Action] — @[[Person]]
+
+## Decisions Log
+
+| Decision | Session   | Made By    | Rationale | Impact                   |
+| -------- | --------- | ---------- | --------- | ------------------------ |
+| [What]   | [Session] | [[Person]] | [Why]     | [What it enables/blocks] |
+
+## Open Questions
+
+### High Priority (Blocking Work)
+
+- [ ] [Question] — Needs: [[Person]] — Blocks: [What]
+  - Emerged in: [Session]
+
+### Medium Priority
+
+- [ ] [Question] — Needs: [[Person]]
+
+### For Future Discussion
+
+- [ ] [Question]
+
+## What Didn't Get Discussed
+
+Topics that were on the agenda or expected but weren't addressed:
+
+- [Topic 1] — Was scheduled for [time] but [reason]
+- [Topic 2] — Expected follow-up that didn't happen
+
+## Context & Cross-References
+
+### This Summit Connects To
+
+- [[Active Project]]: [Specific connection]
+- [[Previous Meeting]]: [How thinking evolved]
+- [[Related Initiative]]: [Connection]
+
+### Suggested Follow-ups
+
+- **[[Proposed Meeting]]**: [Why needed]
+- **[[Proposed Doc]]**: [What to capture]
+
+---
+
+## Session Notes
+
+### [Session 1 Title]
+
+**Chunk:** [001_welcome_agenda_setting.md](chunks/001_welcome_agenda_setting.md)
+**Original File:** [[path/to/original_transcript.md]]
+**Duration:** [X hours]
+**Speakers:** [[Person 1]], [[Person 2]]
+
+[Brief session summary - 2-3 paragraphs]
+
+---
+
+### [Session 2 Title]
+
+**Chunk:** [002_topic_discussion.md](chunks/002_topic_discussion.md)
+[Same format for each session]
+
+---
+
+## Processing Metadata
+
+- **Processed:** [timestamp]
+- **Input folder:** [path]
+- **Files processed:** [N]
+- **Chunks created:** [M]
+- **Stages completed:** discovery ✓ chunking ✓ map ✓ reduce ✓ synthesis ✓ critique ✓ extraction ✓ compilation ✓
+
+### Generated Files
+
+- `downloads/` — [N] external resources downloaded from URLs
+- `chunks/` — [M] chunk files (transcripts + downloaded docs combined)
+- `chunk_summaries/` — (temporary, removed after processing)
+- `chunk_summary.md` — Consolidated summaries with all quotes, decisions, actions
+- `summit_summary.md` — This file (final output)
+```
+
+---
+
+## Important Guidelines
+
+### Concurrency is Key
+
+- Stage 1 tasks (1a, 1b, 1c, 1d) run in parallel
+- Stage 1e (semantic chunking analysis) runs after 1a-1d complete
+- Stage 1f (write chunks to disk) runs after 1e
+- Stage 2 (Map) processes ALL chunks concurrently via Task agents
+- Stage 3 (Reduce) consolidates summaries, recursively if needed
+- Stage 6 tasks (6a, 6b, 6c) run in parallel
+- Use multiple Task tool calls in single messages
+
+### Quote Handling
+
+- Use EXACT quotes from transcripts
+- Preserve speaker attribution always
+- Note uncertainty: "(unclear speaker)" or "(possibly John)"
+- Truncate with [...] for very long quotes
+
+### Theme Priority
+
+- Be honest about priority; not everything is 🔴
+- Priority reflects ACTUAL importance, not time spent
+- A summit with few urgent themes is fine
+
+### Linking
+
+- Use [[wiki links]] for all people, projects, concepts
+- Link to existing notes; don't invent non-existent links
+- In "Suggested Follow-ups," propose what to create
+
+### The Critique Step (Stage 5)
+
+- This is the most important innovation
+- Multi-day events have MORE hidden themes than single meetings
+- Don't skip it even for "well-organized" events
+- Runs AFTER the map-reduce summarization has consolidated all content
+
+---
+
+## Troubleshooting
+
+**Very large transcripts (many hours):** Stage 1e analyzes semantic boundaries, Stage 1f writes chunks to disk. Each chunk is then summarized in parallel during Stage 2 (Map). Target 500-2000 lines per chunk.
+
+**Chunks too large for context:** If a single chunk exceeds 2000 lines, use the next header level to subdivide. The chunking constraints in Stage 1f handle this automatically.
+
+**Too many chunks (>20):** For very large summits, the map-reduce pattern in Stages 2-3 handles this. Stage 3 recursively reduces summaries until they fit in context.
+
+**Missing session notes:** Note gaps explicitly. Check if notes exist elsewhere (daily notes, Google Docs references).
+
+**No clear decisions:** Some sessions are exploratory. Score themes on strategic importance and energy instead.
+
+**Conflicting information across sessions:** Note the conflict explicitly. Include both perspectives and what remains unresolved.
+
+**Multiple days with no clear boundaries:** Use timestamps, topic shifts, or agenda references to segment in Stage 1e.
+
+**Resuming interrupted processing:** Check for existing `chunks/` and `chunk_summaries/` directories. The idempotency checks in each stage will skip already-completed work.
