@@ -18,3 +18,8 @@ if ! command -v direnv &>/dev/null; then
   sudo apt-get install -y direnv 2>/dev/null || sudo yum install -y direnv 2>/dev/null || true
 fi
 {{- end }}
+
+# Install uv (all platforms)
+if ! command -v uv &>/dev/null; then
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
