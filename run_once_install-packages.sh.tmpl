@@ -17,6 +17,16 @@ brew install --quiet 1password-cli direnv
 if ! command -v direnv &>/dev/null; then
   sudo apt-get install -y direnv 2>/dev/null || sudo yum install -y direnv 2>/dev/null || true
 fi
+
+# Install 1Password CLI on Linux
+if ! command -v op &>/dev/null; then
+  curl -sS https://downloads.1password.com/linux/keys/1password.asc \
+    | sudo gpg --dearmor -o /usr/share/keyrings/1password-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] \
+    https://downloads.1password.com/linux/debian/$(dpkg --print-architecture) stable main" \
+    | sudo tee /etc/apt/sources.list.d/1password.list
+  sudo apt-get update && sudo apt-get install -y 1password-cli
+fi
 {{- end }}
 
 # Install uv (all platforms)
