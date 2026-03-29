@@ -38,5 +38,14 @@ export PATH="$OMNARA_INSTALL/bin:$PATH"
 export PATH="{{ .chezmoi.homeDir }}/.exo/bin:$PATH"
 export PATH="{{ .chezmoi.homeDir }}/.opencode/bin:$PATH"
 
+# Obsidian vault
+for _obsidian_candidate in "$HOME/Dropbox/obsidian/Alex3" "$HOME/Documents/Alex3"; do
+  if [[ -d "$_obsidian_candidate/.obsidian" ]]; then
+    export OBSIDIAN_ROOT="$_obsidian_candidate"
+    break
+  fi
+done
+unset _obsidian_candidate
+
 # Aliases
 source "{{ .chezmoi.sourceDir }}/aliases.sh"
