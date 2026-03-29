@@ -2,3 +2,4 @@
 # Edit here and commit; no chezmoi apply needed.
 
 alias claude-render="$HOME/Dropbox/obsidian/Alex3/.claude/scripts/render.py"
+alias fuckit="claude --dangerously-skip-permissions"
