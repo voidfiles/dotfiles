@@ -1,6 +1,6 @@
 [user]
     name = {{ .name }}
-    email = {{ (onepasswordDetailsFields "Gmail - voidfiles").username.value }}
+    email = {{ promptStringOnce . "email" "Git email address" }}
 
 [init]
     defaultBranch = main
