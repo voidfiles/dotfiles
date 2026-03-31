@@ -2,9 +2,3 @@
 eval "$(/opt/homebrew/bin/brew shellenv)"
 export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
 {{- end }}
-
-# Personal bin dir (mac and linux)
-[[ "$PATH" == *"$HOME/bin:"* ]] || export PATH="$HOME/bin:$PATH"
-
-# pipx
-export PATH="$PATH:{{ .chezmoi.homeDir }}/.local/bin"
