@@ -1,0 +1,28 @@
+# Language runtimes & tools
+export DENO_INSTALL="{{ .chezmoi.homeDir }}/.deno"
+export PATH="$DENO_INSTALL/bin:$PATH"
+
+{{ if eq .chezmoi.os "darwin" -}}
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+{{- end }}
+
+export PATH="{{ .chezmoi.homeDir }}/go/bin:$PATH"
+
+# nvm
+export NVM_DIR="$HOME/.nvm"
+{{ if eq .chezmoi.os "darwin" -}}
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+{{ else -}}
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+{{- end }}
+
+# rye (Python)
+[ -s "$HOME/.rye/env" ] && . "$HOME/.rye/env"
+
+# Personal bin dir
+[[ "$PATH" == *"$HOME/bin:"* ]] || export PATH="$HOME/bin:$PATH"
+
+# pipx
+export PATH="$PATH:{{ .chezmoi.homeDir }}/.local/bin"
