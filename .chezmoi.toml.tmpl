@@ -1,5 +1,7 @@
+{{- $isWork := eq (output "whoami" | trim) "alexkessinger" -}}
 [data]
   name = "voidfiles"
+  is_work = {{ $isWork }}
 
 [onepassword]
   command = "op"
