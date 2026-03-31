@@ -1,2 +1,7 @@
 README.md
 .git
+
+{{ if .is_work }}
+.zshrc
+.zprofile
+{{ end }}
