@@ -1,5 +1,7 @@
+{{- $email := promptStringOnce . "email" "Git email address" -}}
 [data]
   name = "voidfiles"
+  email = {{ $email | quote }}
 
 [onepassword]
   command = "op"
