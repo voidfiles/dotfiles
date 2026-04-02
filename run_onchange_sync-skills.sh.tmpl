@@ -1,52 +1,21 @@
 #!/bin/bash
-# Sync skills from chezmoi source(s) into ~/.claude/skills/
+# Sync personal skills into ~/.claude/skills/
 # skills hash: {{ output "ls" "-R" (joinPath .chezmoi.sourceDir "skills") | sha256sum }}
 set -e
 
 SKILLS_DIR="$HOME/.claude/skills"
 PERSONAL_SRC="{{ .chezmoi.sourceDir }}/skills"
-STRIPE_SRC="$HOME/.local/share/chezmoi-stripe/skills"
-IS_WORK={{ .is_work }}
 
-# Clean target
-rm -rf "$SKILLS_DIR"
 mkdir -p "$SKILLS_DIR"
 
-# Determine priority: work machines prefer stripe, personal machines prefer personal
-if [ "$IS_WORK" = "true" ]; then
-    PRIMARY_SRC="$STRIPE_SRC"
-    PRIMARY_LABEL="stripe"
-    SECONDARY_SRC="$PERSONAL_SRC"
-    SECONDARY_LABEL="personal"
-else
-    PRIMARY_SRC="$PERSONAL_SRC"
-    PRIMARY_LABEL="personal"
-    SECONDARY_SRC="$STRIPE_SRC"
-    SECONDARY_LABEL="stripe"
-fi
+# Copy personal skills
+for skill_dir in "$PERSONAL_SRC"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name="$(basename "$skill_dir")"
+    # Remove existing and replace (handles updates)
+    rm -rf "$SKILLS_DIR/$skill_name"
+    cp -R "$skill_dir" "$SKILLS_DIR/$skill_name"
+done
 
-# Copy primary source skills (these always get clean names)
-if [ -d "$PRIMARY_SRC" ]; then
-    for skill_dir in "$PRIMARY_SRC"/*/; do
-        [ -d "$skill_dir" ] || continue
-        skill_name="$(basename "$skill_dir")"
-        cp -R "$skill_dir" "$SKILLS_DIR/$skill_name"
-    done
-fi
-
-# Copy secondary source skills (renamed on collision)
-if [ -d "$SECONDARY_SRC" ]; then
-    for skill_dir in "$SECONDARY_SRC"/*/; do
-        [ -d "$skill_dir" ] || continue
-        skill_name="$(basename "$skill_dir")"
-        if [ -d "$SKILLS_DIR/$skill_name" ]; then
-            # Collision: secondary gets prefixed name
-            cp -R "$skill_dir" "$SKILLS_DIR/${SECONDARY_LABEL}_${skill_name}"
-        else
-            cp -R "$skill_dir" "$SKILLS_DIR/$skill_name"
-        fi
-    done
-fi
-
-echo "Skills synced to $SKILLS_DIR"
+echo "Personal skills synced to $SKILLS_DIR"
 ls "$SKILLS_DIR" | wc -l | xargs echo "Total skills:"
