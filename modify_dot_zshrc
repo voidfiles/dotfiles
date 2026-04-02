@@ -1,0 +1,21 @@
+#!/bin/bash
+# modify_dot_zshrc - append modular shell loader if not already present
+# Preserves all existing content (Chef blocks, manual customizations, etc.)
+
+LOADER='for f in ~/.config/shell/*.zsh(N); do source "$f"; done'
+MARKER="# Load modular shell config"
+
+# Read existing content
+existing="$(cat)"
+
+# Check if loader already present
+if echo "$existing" | grep -qF "$MARKER"; then
+    echo "$existing"
+    exit 0
+fi
+
+# Append loader after existing content
+echo "$existing"
+echo ""
+echo "$MARKER"
+echo "$LOADER"
