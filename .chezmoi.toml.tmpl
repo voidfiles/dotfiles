@@ -1,4 +1,7 @@
-{{- $email := promptStringOnce . "email" "Git email address" -}}
+{{- $email := env "GIT_EMAIL" -}}
+{{- if not $email -}}
+{{-   $email = promptStringOnce . "email" "Git email address" -}}
+{{- end -}}
 [data]
   name = "voidfiles"
   email = {{ $email | quote }}
