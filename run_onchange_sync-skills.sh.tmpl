@@ -6,6 +6,10 @@ set -e
 SKILLS_DIR="$HOME/.claude/skills"
 PERSONAL_SRC="{{ .chezmoi.sourceDir }}/skills"
 
+# Remove existing symlink or directory, start fresh
+if [ -L "$SKILLS_DIR" ]; then
+    rm "$SKILLS_DIR"
+fi
 mkdir -p "$SKILLS_DIR"
 
 # Copy personal skills
