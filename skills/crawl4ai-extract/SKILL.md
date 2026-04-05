@@ -1,5 +1,3 @@
-<!-- Source: synthesized from firecrawl-agent | Adapted for: Crawl4AI -->
-
 ---
 name: crawl4ai-extract
 description: Extract structured JSON from a webpage using an LLM and a Pydantic schema, returning typed objects instead of raw markdown.
@@ -12,9 +10,14 @@ Scrape a URL and use an LLM to extract structured data matching a Pydantic schem
 ## Setup
 
 ```bash
-pip install crawl4ai
-python -m crawl4ai.install  # downloads browser binaries (Playwright)
-pip install pydantic
+# One-time: download browser binaries (Playwright)
+uvx --from crawl4ai python -m crawl4ai.install
+```
+
+Run the script with:
+
+```bash
+uv run --with crawl4ai --with pydantic python your_script.py
 ```
 
 Set your LLM provider API key as an environment variable:

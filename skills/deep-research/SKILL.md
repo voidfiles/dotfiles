@@ -1,5 +1,3 @@
-<!-- Source: synthesized from deep-research-skill.md, deep-research-methodology.md, deep-research-quality-gates.md, feynman-deep-research-workflow.md, gpt-researcher-prompts.md, ecc-deep-research.md -->
-
 ---
 name: deep-research
 description: Conducts comprehensive, multi-source research with cross-verification, source credibility scoring, and structured synthesis. Produces citation-backed reports through an 8-phase pipeline. Triggers on "deep research", "comprehensive analysis", "compare X vs Y", "analyze trends", "state of the art", "research report", "deep dive", or "investigate". NOT for simple lookups, single-source questions, debugging, or queries answerable in 1-2 searches.

@@ -1,6 +1,3 @@
-<!-- Source: synthesized from deep-research-team-query-clarifier.md, deep-research-team-coordinator.md, deep-research-team-orchestrator.md, feynman-system-prompt.md -->
-
----
 name: research-planning
 description: Pre-flight research planning: clarify scope, assess complexity, choose approach, decompose into sub-questions. Run before any research task.
 ---

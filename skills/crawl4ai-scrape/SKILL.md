@@ -1,5 +1,3 @@
-<!-- Source: synthesized from firecrawl-scrape | Adapted for: Crawl4AI -->
-
 ---
 name: crawl4ai-scrape
 description: Fetch a single URL and return clean markdown using an async headless browser, handling JS-rendered pages without external API costs.
@@ -12,8 +10,14 @@ Scrape one URL and return clean markdown. Handles static pages and JavaScript-re
 ## Setup
 
 ```bash
-pip install crawl4ai
-python -m crawl4ai.install  # downloads browser binaries (Playwright)
+# One-time: download browser binaries (Playwright)
+uvx --from crawl4ai python -m crawl4ai.install
+```
+
+Run the script with:
+
+```bash
+uv run --with crawl4ai python your_script.py
 ```
 
 ## Usage

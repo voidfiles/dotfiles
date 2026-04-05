@@ -1,5 +1,3 @@
-<!-- Source: synthesized from deep-research-team-query-clarifier.md, deep-research-team-coordinator.md, feynman-system-prompt.md -->
-
 ---
 name: query-decomposition
 description: Takes a research question and returns N parallel sub-questions, each with a source type hint and search approach, for use in multi-track research workflows.

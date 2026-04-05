@@ -1,5 +1,3 @@
-<!-- Source: synthesized from deep-research-team-synthesizer.md, deep-research-team-fact-checker.md, feynman-researcher-agent.md, feynman-system-prompt.md -->
-
 ---
 name: research-synthesis
 description: Takes N sets of findings from parallel research workers and produces one deduplicated, attributed, thematically organized synthesis with confidence scores. Run after parallel-dispatch completes.

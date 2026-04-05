@@ -1,5 +1,3 @@
-<!-- Source: synthesized from firecrawl-crawl | Adapted for: Crawl4AI -->
-
 ---
 name: crawl4ai-crawl
 description: Deep-crawl an entire site or site section, following links up to a configurable depth, and return markdown content for every page found.
@@ -12,8 +10,14 @@ Bulk-extract content from a website by following links. Returns a list of `Crawl
 ## Setup
 
 ```bash
-pip install crawl4ai
-python -m crawl4ai.install  # downloads browser binaries (Playwright)
+# One-time: download browser binaries (Playwright)
+uvx --from crawl4ai python -m crawl4ai.install
+```
+
+Run the script with:
+
+```bash
+uv run --with crawl4ai python your_script.py
 ```
 
 ## Usage

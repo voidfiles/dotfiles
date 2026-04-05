@@ -1,5 +1,3 @@
-<!-- Source: synthesized from scientific-method.md, experimental-design.md, research-ai-tools.md -->
-
 ---
 name: research-rigor
 description: Apply the core principles of methodological rigor to study design and execution — covering the hypothesis-first rule, controls, reproducibility, DOE basics, pre-registration, and anti-hallucination patterns for AI-assisted research.

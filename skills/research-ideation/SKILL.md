@@ -1,5 +1,3 @@
-<!-- Source: synthesized from scientific-brainstorming.md, hypothesis-generation.md, kwp-scientific-problem-selection.md -->
-
 ---
 name: research-ideation
 description: Generate, formulate, and filter research ideas through three phases — divergent ideation, hypothesis formulation, and problem selection — using the Fischbach & Walsh framework to prioritize by generality, learning value, feasibility, and impact.

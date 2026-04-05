@@ -1,5 +1,3 @@
-<!-- Source: synthesized from firecrawl-map | Adapted for: Crawl4AI -->
-
 ---
 name: crawl4ai-map
 description: Discover and collect all URLs on a site without extracting page content — faster than a full crawl, used to locate target pages before scraping.
@@ -12,8 +10,14 @@ Discover URLs across a site by following links, but skip content extraction enti
 ## Setup
 
 ```bash
-pip install crawl4ai
-python -m crawl4ai.install  # downloads browser binaries (Playwright)
+# One-time: download browser binaries (Playwright)
+uvx --from crawl4ai python -m crawl4ai.install
+```
+
+Run the script with:
+
+```bash
+uv run --with crawl4ai python your_script.py
 ```
 
 ## Usage
