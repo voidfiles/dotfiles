@@ -34,17 +34,22 @@ chezmoi fetches the repo, renders templates (secrets from 1Password), runs the b
 
 ## Day-to-day workflow
 
+Use `just` from the repo root. Run `just` with no args to list all recipes.
+
 | Command | Purpose |
 |---------|---------|
-| `chezmoi diff` | Preview what chezmoi would change |
-| `chezmoi status` | Show which managed files have drifted |
-| `chezmoi apply` | Apply source state to home directory |
-| `chezmoi re-add ~/.zshrc` | Pull manual edits back into source |
-| `chezmoi edit ~/.zshrc` | Edit the source file for a managed dotfile |
-| `chezmoi update` | Pull latest from git remote and apply |
-| `chezmoi cd` | Open a shell in the source directory |
+| `just apply` | Apply source state to home directory |
+| `just diff` | Preview what chezmoi would change |
+| `just status` | Show which managed files have drifted |
+| `just update` | Pull latest from git remote and apply |
+| `just re-add ~/.zshrc` | Pull manual edits back into source |
+| `just refresh-skills` | Fetch skills from external repos into `skills/` |
+| `just upgrade-skills` | Refresh skills from upstream and sync via chezmoi |
+| `just force-onchange sync-skills` | Force a run_onchange_ script to re-run next apply |
 
-To make changes: `chezmoi edit <file>`, commit, push. On other machines: `chezmoi update`.
+Raw chezmoi commands still work (`chezmoi edit <file>`, `chezmoi cd`, etc.).
+
+To make changes: `chezmoi edit <file>`, commit, push. On other machines: `just update`.
 
 ## What's managed
 

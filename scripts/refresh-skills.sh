@@ -9,7 +9,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILLS_DIR="$SCRIPT_DIR/skills"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SKILLS_DIR="$REPO_ROOT/skills"
+EXTERNAL_MANIFEST="$SCRIPT_DIR/.external-skills"
 
 # ---------------------------------------------------------------------------
 # SKILL_SOURCES: each entry is pipe-separated
@@ -23,6 +25,9 @@ SKILL_SOURCES=(
 
 TMPDIR_BASE="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR_BASE"' EXIT
+
+# Rebuild the manifest from scratch on each run
+: > "$EXTERNAL_MANIFEST"
 
 updated=0
 errors=0
@@ -64,6 +69,7 @@ for entry in "${SKILL_SOURCES[@]}"; do
         echo "    Copying $skill ..."
         rm -rf "$dst"
         cp -R "$src" "$dst"
+        echo "$skill" >> "$EXTERNAL_MANIFEST"
         (( updated++ )) || true
     done
 done
