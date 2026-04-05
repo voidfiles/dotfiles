@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# Fetch skills from external repos and copy them into the local skills/ folder.
+# After running this, commit the changes and chezmoi will sync them to ~/.claude/skills/.
+#
+# To add a new source, append an entry to SKILL_SOURCES below:
+#   "git@github.com:org/repo.git|src-subfolder|skill-a skill-b skill-c"
+# Leave src-subfolder blank ("") to copy from the repo root.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILLS_DIR="$SCRIPT_DIR/skills"
+
+# ---------------------------------------------------------------------------
+# SKILL_SOURCES: each entry is pipe-separated
+#   <repo-url> | <subfolder-in-repo> | <space-separated skill names>
+# ---------------------------------------------------------------------------
+SKILL_SOURCES=(
+    "git@github.com:K-Dense-AI/claude-scientific-skills.git|scientific-skills|bgpt-paper-search literature-review paper-lookup"
+)
+
+# ---------------------------------------------------------------------------
+
+TMPDIR_BASE="$(mktemp -d)"
+trap 'rm -rf "$TMPDIR_BASE"' EXIT
+
+updated=0
+errors=0
+
+for entry in "${SKILL_SOURCES[@]}"; do
+    IFS='|' read -r repo subfolder skill_list <<< "$entry"
+
+    repo_name="$(basename "$repo" .git)"
+    clone_dir="$TMPDIR_BASE/$repo_name"
+
+    echo "==> Cloning $repo_name ..."
+    if ! git clone --depth=1 --quiet "$repo" "$clone_dir" 2>&1; then
+        echo "    ERROR: failed to clone $repo" >&2
+        (( errors++ )) || true
+        continue
+    fi
+
+    src_base="$clone_dir"
+    if [[ -n "$subfolder" ]]; then
+        src_base="$clone_dir/$subfolder"
+    fi
+
+    if [[ ! -d "$src_base" ]]; then
+        echo "    ERROR: subfolder '$subfolder' not found in $repo_name" >&2
+        (( errors++ )) || true
+        continue
+    fi
+
+    for skill in $skill_list; do
+        src="$src_base/$skill"
+        dst="$SKILLS_DIR/$skill"
+
+        if [[ ! -d "$src" ]]; then
+            echo "    WARNING: skill '$skill' not found in $repo_name/$subfolder" >&2
+            (( errors++ )) || true
+            continue
+        fi
+
+        echo "    Copying $skill ..."
+        rm -rf "$dst"
+        cp -R "$src" "$dst"
+        (( updated++ )) || true
+    done
+done
+
+echo ""
+echo "Done. $updated skill(s) updated, $errors error(s)."
+if (( errors > 0 )); then
+    exit 1
+fi
