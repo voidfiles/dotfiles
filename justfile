@@ -1,28 +1,30 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
+chezmoi := "chezmoi -S " + justfile_directory()
+
 # Show available recipes
 default:
     @just --list
 
 # Apply chezmoi source state to the home directory
 apply:
-    chezmoi apply
+    {{ chezmoi }} apply
 
 # Preview what chezmoi would change without applying
 diff:
-    chezmoi diff
+    {{ chezmoi }} diff
 
 # Show which managed files have drifted
 status:
-    chezmoi status
+    {{ chezmoi }} status
 
 # Pull latest from git remote and apply
 update:
-    chezmoi update
+    {{ chezmoi }} update
 
 # Pull manual edits from a managed file back into the source
 re-add file:
-    chezmoi re-add {{ file }}
+    {{ chezmoi }} re-add {{ file }}
 
 # Fetch skills from external repos into skills/
 refresh-skills:
