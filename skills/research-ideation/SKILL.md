@@ -1,6 +1,6 @@
 ---
 name: research-ideation
-description: Generate, formulate, and filter research ideas through three phases — divergent ideation, hypothesis formulation, and problem selection — using the Fischbach & Walsh framework to prioritize by generality, learning value, feasibility, and impact.
+description: Generate, formulate, and filter research ideas through four phases — divergent ideation, question expansion, hypothesis formulation, and problem selection — using the Fischbach & Walsh framework to prioritize by generality, learning value, feasibility, and impact.
 ---
 
 # Research Ideation
@@ -12,6 +12,7 @@ description: Generate, formulate, and filter research ideas through three phases
 - Evaluating whether a problem is worth pursuing before investing significant effort
 - Breaking out of a narrow framing to find more promising angles
 - Preparing a project pitch or proposal and needing to stress-test the idea
+- Expanding or evolving research questions before committing to a direction
 
 ---
 
@@ -41,9 +42,149 @@ Pick fields adjacent to your domain and list their strongest methodological cont
 
 ---
 
-## Phase 2 — Hypothesis Formulation
+## Phase 2 — Question Expansion
 
-Take promising directions from Phase 1 and make them precise enough to test.
+Phase 1 produces raw candidate directions. Before formalizing them into testable hypotheses, this phase widens and deepens those directions through structured expansion techniques. The purpose is to make sure you haven't locked in too early — that you've explored the full shape of the question space before committing.
+
+This phase is interactive. Present the menu of techniques below and let the user choose which ones to apply. Not every technique suits every question — some questions benefit most from cross-disciplinary reframing, others from assumption interrogation or recursive deepening. Let the user's intuition guide selection.
+
+### Technique Menu
+
+Present these options to the user. For each, give a one-line description and ask which they'd like to explore. Typical sessions use 2–4 techniques — enough to meaningfully expand the question set without exhaustion.
+
+---
+
+### 1. Assumption Interrogation
+
+Surface the hidden premises embedded in the current framing, then use each as a lever to generate alternative questions.
+
+**How to run this conversationally:**
+
+1. Take the user's current research question(s) from Phase 1.
+2. Identify 3–5 assumptions baked into the framing. These might be assumptions about causality, about which variables matter, about the population of interest, about the timescale, or about what counts as a valid outcome.
+3. Present them to the user: "Here are assumptions I see embedded in your question. Which of these feel shakiest or most worth challenging?"
+4. For each assumption the user flags, generate an alternative research question that drops or inverts it.
+5. Ask: "What would need to be false for your original question to be meaningless?" — this often surfaces the deepest assumption of all.
+
+**Example dialogue:**
+> Your question assumes the effect operates at the individual level. What if the relevant unit is the team, the organization, or the network? That reframes the question from "why do individuals X?" to "what structural conditions produce X?"
+
+---
+
+### 2. Cross-Disciplinary Pollination
+
+LLMs have absorbed patterns across many fields. This technique exploits that to find **structural isomorphisms** — problems that look different on the surface but share deep formal similarities.
+
+**How to run this conversationally:**
+
+1. Ask: "What's the core dynamic in your question — what's the abstract pattern?" (e.g., competition for a scarce resource, cascading failure, information asymmetry, adaptation under pressure)
+2. Once the user names the dynamic, identify 2–3 distant fields that study the same dynamic under different names.
+3. For each field, translate the user's question into that field's language and ask: "Does this translation suggest a mechanism or method you hadn't considered?"
+4. Look for frameworks or metaphors that import cleanly. A supply chain optimization lens applied to neural pathway efficiency. An epidemiological model applied to information spread. An evolutionary fitness landscape applied to startup strategy.
+
+The value here isn't in the analogy itself — it's in the specific mechanism or method the analogy imports that wasn't visible from within the original field.
+
+---
+
+### 3. Systematic Dimension Expansion
+
+Decompose the question along orthogonal axes to find versions of it that might be more interesting, more tractable, or more impactful than the original.
+
+**Walk through each dimension with the user:**
+
+| Dimension | Guiding question |
+|---|---|
+| **Scale** | What does this look like at the individual / group / institutional / civilizational level? |
+| **Temporality** | How does this change over milliseconds vs. decades vs. centuries? |
+| **Negation** | What's the inverse? What if you studied the *absence* of this phenomenon? |
+| **Mechanism vs. Function** | Are you asking *how* this works or *why* it exists? What happens if you switch? |
+| **Boundary conditions** | Under what conditions does this question become trivial? Under what conditions does it become impossible? |
+
+For each dimension, generate the expanded version of the question and ask the user: "Is this more interesting than the original? Does it suggest a different entry point?"
+
+Boundary conditions are especially productive — they often reveal where the interesting science actually lives (at the edges, not the center).
+
+---
+
+### 4. Literature Gap Detection
+
+Help the user identify questions that live in the spaces between existing bodies of work.
+
+**How to run this conversationally:**
+
+1. Ask the user to name 2–3 literatures or theoretical traditions their question touches.
+2. For each pair of literatures, ask: "What questions sit in the gap between these two that neither addresses directly?"
+3. Also ask: "What's the obvious question in this space that seems surprisingly under-studied? What would a newcomer to the field be shocked no one has answered yet?"
+4. Probe for empirical anomalies: "What phenomenon would be surprising or unexplained from the perspective of [the dominant theory]?"
+
+**Important caveat to share with the user:** LLMs can suggest directions and framings, but they hallucinate citations and can confabulate the state of a literature. Use this technique to generate *candidate* gaps, then verify against actual literature before investing. The `/paper-lookup` and `/literature-review` skills can help with verification.
+
+---
+
+### 5. Conceptual Stress-Testing
+
+Use devil's advocate reasoning to sharpen and pressure-test the questions before they become hypotheses.
+
+**Run through these prompts with the user:**
+
+- "What's the strongest methodological critique of this question as currently framed?"
+- "If you found a strong positive result, what are 3 alternative explanations a skeptical reviewer would raise?"
+- "What would make this question more precise? More falsifiable? More consequential?"
+- "Is this question actually asking what you think it's asking, or is there a deeper question hiding underneath?"
+
+The goal isn't to kill the question — it's to find the version of it that can survive scrutiny. Questions that emerge from stress-testing are more likely to produce publishable, defensible work.
+
+---
+
+### 6. Generative Combinatorics
+
+Map the combinatorial space of possible questions from the user's building blocks.
+
+**How to run this conversationally:**
+
+1. Ask the user to list:
+   - Their core constructs (3–5 key concepts or variables)
+   - Their available methods (what they can actually measure or manipulate)
+   - Their populations or systems of interest
+2. Generate the full combinatorial matrix of possible questions from these inputs.
+3. Flag the combinations that seem most novel or under-explored — especially those the user hadn't considered.
+4. Present the matrix and ask: "Which of these combinations surprises you? Which feels like it's been hiding in plain sight?"
+
+This is especially useful when the user has been circling the same 2–3 questions and needs to see the broader possibility space their ingredients support.
+
+---
+
+### 7. Recursive Deepening (The "5 Whys")
+
+Surface the deeper motivating question that the surface-level question is actually serving.
+
+**How to run this conversationally:**
+
+1. Start with the user's current question.
+2. Ask: "Why does the answer to this question matter?"
+3. Take their answer and ask "why does *that* matter?" again.
+4. Repeat 4–5 times, or until the user hits bedrock — a question they care about for its own sake, not as a means to something else.
+5. Compare the deep question to the surface question. Sometimes the deep question is more interesting, more publishable, or more tractable. Sometimes it confirms the surface question was the right one all along.
+
+This technique often reveals that the user's real question is 2–3 levels below where they started. The surface question was a proxy for something they hadn't articulated yet.
+
+---
+
+### Wrapping Up Phase 2
+
+After running the selected techniques, consolidate the results:
+
+1. Present the full set of expanded/evolved questions alongside the originals from Phase 1.
+2. Ask the user: "Looking at all of these, which directions feel most alive? Which ones do you want to carry forward into hypothesis formulation?"
+3. The user selects 2–5 questions to advance to Phase 3.
+
+The point of expansion is not to keep expanding forever — it's to make sure the questions entering Phase 3 are the strongest, most interesting versions of themselves.
+
+---
+
+## Phase 3 — Hypothesis Formulation
+
+Take the selected questions from Phase 2 and make them precise enough to test.
 
 ### Observation → Mechanism → Prediction → Experimental Test Format
 
@@ -66,7 +207,7 @@ Vague predictions (e.g., "X will increase Y") can be confirmed by almost any pos
 
 ---
 
-## Phase 3 — Problem Selection Filter (Fischbach & Walsh)
+## Phase 4 — Problem Selection Filter (Fischbach & Walsh)
 
 Apply this filter after generating several candidate hypotheses to identify which problem is worth pursuing. Rate each candidate on four axes.
 

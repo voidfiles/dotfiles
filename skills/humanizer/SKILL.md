@@ -1,13 +1,16 @@
 ---
 name: humanizer
-version: 2.1.1
+version: 3.0.0
 description: |
   Remove signs of AI-generated writing from text. Use when editing or reviewing
   text to make it sound more natural and human-written. Based on Wikipedia's
-  comprehensive "Signs of AI writing" guide. Detects and fixes patterns including:
-  inflated symbolism, promotional language, superficial -ing analyses, vague
-  attributions, em dash overuse, rule of three, AI vocabulary words, negative
-  parallelisms, and excessive conjunctive phrases.
+  comprehensive "Signs of AI writing" guide and the tropes.fyi directory.
+  Detects and fixes 41+ patterns including: inflated symbolism, promotional
+  language, superficial -ing analyses, vague attributions, em dash overuse,
+  rule of three, AI vocabulary words, negative parallelisms, excessive
+  conjunctive phrases, magic adverbs, short punchy fragments, false suspense,
+  stakes inflation, dead metaphors, listicles in trench coats, fractal
+  summaries, invented concept labels, and patronizing analogies.
 
   Credits: Original skill by @blader - https://github.com/blader/humanizer
 allowed-tools:
@@ -155,6 +158,32 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
+### 6b. Grandiose Stakes Inflation
+
+**Problem:** AI inflates every argument to world-historical significance. A blog post about API pricing becomes a meditation on the fate of civilization.
+
+**Before:**
+> This will fundamentally reshape how we think about software development. We are witnessing a paradigm shift that will define the next era of computing and change the course of human productivity forever.
+
+**After:**
+> This changes how teams ship code. Builds that took hours now take minutes.
+
+---
+
+### 6c. Invented Concept Labels
+
+**Words to watch:** [domain word] + paradox/trap/creep/divide/vacuum/inversion
+
+**Problem:** AI clusters invented compound labels that sound analytical but aren't established terms. It appends abstract problem-nouns to domain words and uses them as if they're well-known concepts.
+
+**Before:**
+> This creates what we might call the "supervision paradox" — the more autonomous your agents become, the harder they are to oversee. Combined with the "acceleration trap," teams find themselves caught in a cycle of workload creep.
+
+**After:**
+> More autonomous agents are harder to oversee. Teams that adopt them often find their workload increases rather than decreases, at least initially.
+
+---
+
 ## LANGUAGE AND GRAMMAR PATTERNS
 
 ### 7. Overused "AI Vocabulary" Words
@@ -233,9 +262,49 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
+### 13. "Quietly" and Magic Adverbs
+
+**Words to watch:** quietly, deeply, fundamentally, remarkably, arguably, genuinely, profoundly, inherently
+
+**Problem:** AI reaches for these adverbs to make ordinary descriptions feel significant or subtly powerful. "Quietly" is especially common — used to convey understated importance that the writing itself fails to demonstrate.
+
+**Before:**
+> The framework is quietly orchestrating workflows, decisions, and interactions across the entire organization. This is a fundamentally different approach that is arguably the most remarkable shift in how we build software.
+
+**After:**
+> The framework handles workflow routing for the whole organization. It replaces the old batch-processing system.
+
+---
+
+### 14. Anaphora Abuse
+
+**Problem:** AI repeats the same sentence opening multiple times in quick succession to create false rhetorical momentum.
+
+**Before:**
+> They could expose raw APIs. They could offer building blocks. They could provide developer tools. They could create marketplaces. They could let third parties build on top.
+
+**After:**
+> The options range from exposing raw APIs to creating full marketplaces where third parties build on top.
+
+---
+
+### 15. "It's Worth Noting" Filler Transitions
+
+**Words to watch:** It's worth noting, It bears mentioning, Importantly, Interestingly, Notably, It should be noted
+
+**Problem:** AI uses these phrases to introduce new points without connecting them to the previous argument. They signal nothing and pad word count.
+
+**Before:**
+> The team shipped the feature on time. It's worth noting that this approach has limitations. Importantly, we must consider the broader implications. Interestingly, this pattern repeats across industries.
+
+**After:**
+> The team shipped the feature on time, though this approach has limitations that show up across similar projects.
+
+---
+
 ## STYLE PATTERNS
 
-### 13. Em Dash Overuse
+### 16. Em Dash Overuse
 
 **Problem:** LLMs use em dashes (—) more than humans, mimicking "punchy" sales writing.
 
@@ -247,7 +316,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
-### 14. Overuse of Boldface
+### 17. Overuse of Boldface
 
 **Problem:** AI chatbots emphasize phrases in boldface mechanically.
 
@@ -259,7 +328,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
-### 15. Inline-Header Vertical Lists
+### 18. Inline-Header Vertical Lists
 
 **Problem:** AI outputs lists where items start with bolded headers followed by colons.
 
@@ -273,7 +342,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
-### 16. Title Case in Headings
+### 19. Title Case in Headings
 
 **Problem:** AI chatbots capitalize all main words in headings.
 
@@ -285,7 +354,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
-### 17. Emojis
+### 20. Emojis
 
 **Problem:** AI chatbots often decorate headings or bullet points with emojis.
 
@@ -299,7 +368,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
-### 18. Curly Quotation Marks
+### 21. Curly Quotation Marks
 
 **Problem:** ChatGPT uses curly quotes (“...”) instead of straight quotes ("...").
 
@@ -311,9 +380,186 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
+### 22. Unicode Decoration
+
+**Problem:** AI uses unicode arrows, smart quotes, and special characters that can't be easily typed on a standard keyboard. Real writers produce straight quotes and -> or =>.
+
+**Before:**
+> Input -> Processing -> Output. This leads to better outcomes -> which means higher engagement.
+
+**After:**
+> Input -> Processing -> Output. This leads to better outcomes, which means higher engagement.
+
+---
+
+## TONE AND STRUCTURE PATTERNS
+
+### 23. Short Punchy Fragments
+
+**Problem:** RLHF training pushes AI toward one-thought-per-sentence writing aimed at the lowest common denominator. Excessive sentence fragments as standalone paragraphs manufacture false emphasis. No real person writes first drafts this way.
+
+**Before:**
+> He published this. Openly. In a book. As a priest.
+>
+> These weren't just products.
+>
+> And the software side matched.
+>
+> Then it professionalised.
+
+**After:**
+> He published this openly, in a book, as a priest. These weren't just products, and the software matched their ambitions as they professionalized.
+
+---
+
+### 24. "Here's the Kicker" False Suspense
+
+**Words to watch:** Here's the kicker, Here's the thing, Here's where it gets interesting, Here's what most people miss, Here's the deal
+
+**Problem:** AI manufactures drama before an otherwise unremarkable observation by using suspense transitions that promise a revelation but deliver nothing that needed the buildup.
+
+**Before:**
+> The team spent months on the migration. Here's the thing about cloud adoption: it's never just about the technology. Here's where it gets interesting.
+
+**After:**
+> The team spent months on the migration. The hardest part wasn't the technology; it was retraining the ops team.
+
+---
+
+### 25. "Think of It As..." Patronizing Analogies
+
+**Problem:** AI defaults to teacher mode and assumes the reader needs a metaphor to understand anything. Often produces analogies less clear than the original concept.
+
+**Before:**
+> Think of it like a highway system for data. Each lane represents a different data stream, and the toll booths are your validation checkpoints.
+
+**After:**
+> Data flows through parallel streams, each validated before reaching the application layer.
+
+---
+
+### 26. "Imagine a World Where..."
+
+**Problem:** AI sells its argument by opening with "Imagine" followed by a list of wonderful things that will happen if the reader agrees with the premise.
+
+**Before:**
+> Imagine a world where every tool you use -- your calendar, your inbox, your documents -- has a quiet intelligence behind it. In that world, workflows stop being collections of manual steps and start becoming orchestrations.
+
+**After:**
+> Calendar apps and code editors are starting to ship AI features that automate routine tasks. The practical question is which ones actually save time.
+
+---
+
+### 27. False Vulnerability
+
+**Problem:** AI simulates self-awareness or honesty that reads as performative. Real vulnerability is specific and uncomfortable; AI vulnerability is polished and risk-free.
+
+**Before:**
+> And yes, I'm openly in love with the platform model. And yes, since we're being honest: I'm looking at you, OpenAI, Google, Anthropic, Meta. This is not a rant; it's a diagnosis.
+
+**After:**
+> I think the platform model works better for this use case. The major AI labs haven't adopted it yet, for reasons worth examining.
+
+---
+
+### 28. "The Truth Is Simple"
+
+**Problem:** AI asserts that something is obvious or clear instead of actually proving it. If you have to tell the reader your point is clear, it probably isn't.
+
+**Before:**
+> The reality is simpler and less flattering. History is unambiguous on this point. History is clear, the metrics are clear, the examples are clear.
+
+**After:**
+> Three of the last five attempts at this approach failed within two years, for similar reasons.
+
+---
+
+### 29. "Let's Break This Down"
+
+**Words to watch:** Let's break this down, Let's unpack this, Let's explore, Let's dive in
+
+**Problem:** AI defaults to a teacher-student dynamic even when writing for expert audiences.
+
+**Before:**
+> Let's break this down step by step. Let's unpack what this really means for developers.
+
+**After:**
+> The migration has three phases: schema changes, data backfill, and traffic cutover.
+
+---
+
+### 30. Listicle in a Trench Coat
+
+**Problem:** AI writes what is essentially a numbered list but wraps each point in a paragraph starting with "The first... The second... The third..." to disguise the format.
+
+**Before:**
+> The first wall is the absence of a free, scoped API. The second wall is the lack of delegated access. The third wall is the absence of scoped permissions.
+
+**After:**
+> The API has no free tier, no delegated access, and no scoped permissions.
+
+---
+
+### 31. Fractal Summaries
+
+**Problem:** AI applies "what I'm going to tell you; what I'm telling you; what I just told you" at every level. Every subsection gets a summary, every section gets a summary, and the document gets a summary that restates everything.
+
+**Before:**
+> In this section, we'll explore the three key factors. [3000 words later] As we've seen in this section, the three key factors are... And so we return to where we began.
+
+**Fix:** Just write the section. If the conclusion adds new insight, keep it. If it restates the section, cut it.
+
+---
+
+### 32. Dead Metaphor Repetition
+
+**Problem:** AI latches onto a single metaphor and repeats it 5-10 times across a piece. A human would use it once and move on.
+
+**Before:**
+> The ecosystem needs ecosystems to build ecosystem value. Every stakeholder in the ecosystem contributes to the ecosystem's growth.
+
+**After:**
+> Third-party developers add features the core team wouldn't build. Each integration makes the platform more useful to the next developer who shows up.
+
+---
+
+### 33. Historical Analogy Stacking
+
+**Problem:** AI rapidly lists historical companies or tech revolutions to build false authority, especially common in technical writing.
+
+**Before:**
+> Apple didn't build Uber. Facebook didn't build Spotify. Stripe didn't build Shopify. Every major technological shift -- the web, mobile, social, cloud -- followed the same pattern.
+
+**After:**
+> Platforms tend to create value they didn't plan for. AWS started as internal infrastructure and became the backbone of most startups.
+
+---
+
+### 34. One-Point Dilution
+
+**Problem:** AI pads a simple thesis to feel "comprehensive" by rephrasing the same idea with different metaphors, examples, and framings. An 800-word argument becomes 4000 words of circular repetition.
+
+**Fix:** If you can summarize the entire piece in one sentence and nothing is lost, the piece needs to either be much shorter or actually develop the argument with new evidence, counterarguments, or implications.
+
+---
+
+### 35. Signposted Conclusions
+
+**Words to watch:** In conclusion, To sum up, In summary, As we've seen
+
+**Problem:** AI announces its structural moves because it's following a template. Good writing doesn't need to tell you it's concluding.
+
+**Before:**
+> In conclusion, the future of AI depends on thoughtful regulation. To sum up, we've explored three key themes.
+
+**After:**
+> Regulation will shape what AI looks like in five years. The three areas that matter most are data access, liability rules, and compute allocation.
+
+---
+
 ## COMMUNICATION PATTERNS
 
-### 19. Collaborative Communication Artifacts
+### 36. Collaborative Communication Artifacts
 
 **Words to watch:** I hope this helps, Of course!, Certainly!, You're absolutely right!, Would you like..., let me know, here is a...
 
@@ -327,7 +573,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
-### 20. Knowledge-Cutoff Disclaimers
+### 37. Knowledge-Cutoff Disclaimers
 
 **Words to watch:** as of [date], Up to my last training update, While specific details are limited/scarce..., based on available information...
 
@@ -341,7 +587,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
-### 21. Sycophantic/Servile Tone
+### 38. Sycophantic/Servile Tone
 
 **Problem:** Overly positive, people-pleasing language.
 
@@ -355,7 +601,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ## FILLER AND HEDGING
 
-### 22. Filler Phrases
+### 39. Filler Phrases
 
 **Before → After:**
 - "In order to achieve this goal" → "To achieve this"
@@ -367,7 +613,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
-### 23. Excessive Hedging
+### 40. Excessive Hedging
 
 **Problem:** Over-qualifying statements.
 
@@ -379,7 +625,7 @@ Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as
 
 ---
 
-### 24. Generic Positive Conclusions
+### 41. Generic Positive Conclusions
 
 **Problem:** Vague upbeat endings.
 
@@ -434,6 +680,8 @@ Provide:
 
 ## Reference
 
-This skill is based on [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), maintained by WikiProject AI Cleanup. The patterns documented there come from observations of thousands of instances of AI-generated text on Wikipedia.
+This skill is based on two primary sources:
+- [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), maintained by WikiProject AI Cleanup
+- [Tropes - AI Writing Pattern Directory](https://tropes.fyi/directory) by ossama.is
 
-Key insight from Wikipedia: "LLMs use statistical algorithms to guess what should come next. The result tends toward the most statistically likely result that applies to the widest variety of cases."
+Key insight: any of these patterns used once might be fine. The problem is when multiple tropes appear together or when a single trope is used repeatedly. Write like a human: varied, imperfect, specific.
