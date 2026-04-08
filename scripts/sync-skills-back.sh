@@ -50,6 +50,12 @@ for skill_dir in "$SKILLS_SRC"/*/; do
         continue
     fi
 
+    # Skills prefixed with stripe_ are managed by a separate repo
+    if [[ "$skill_name" == stripe_* ]]; then
+        (( skipped_external++ )) || true
+        continue
+    fi
+
     dst="$SKILLS_DST/$skill_name"
 
     if [[ ! -d "$dst" ]]; then
