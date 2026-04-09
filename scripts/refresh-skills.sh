@@ -15,10 +15,11 @@ EXTERNAL_MANIFEST="$SCRIPT_DIR/.external-skills"
 
 # ---------------------------------------------------------------------------
 # SKILL_SOURCES: each entry is pipe-separated
-#   <repo-url> | <subfolder-in-repo> | <space-separated skill names>
+#   <repo-url> | <subfolder-in-repo> | <space-separated skill names>[:<local skill name>]
 # ---------------------------------------------------------------------------
 SKILL_SOURCES=(
-    "git@github.com:K-Dense-AI/claude-scientific-skills.git|scientific-skills|bgpt-paper-search literature-review paper-lookup"
+    "https://github.com/K-Dense-AI/claude-scientific-skills.git|scientific-skills|bgpt-paper-search literature-review paper-lookup"
+    "https://github.com/mattnowdev/thinking-partner.git|skills|thinking-partner:model-based-thinking"
 )
 
 # ---------------------------------------------------------------------------
@@ -56,20 +57,30 @@ for entry in "${SKILL_SOURCES[@]}"; do
         continue
     fi
 
-    for skill in $skill_list; do
-        src="$src_base/$skill"
-        dst="$SKILLS_DIR/$skill"
+    for skill_spec in $skill_list; do
+        # Support "remote_name:local_name" rename syntax
+        remote_name="${skill_spec%%:*}"
+        local_name="${skill_spec##*:}"
+        # If no colon, both are the same
+        [[ "$remote_name" == "$local_name" ]] || true
+
+        src="$src_base/$remote_name"
+        dst="$SKILLS_DIR/$local_name"
 
         if [[ ! -d "$src" ]]; then
-            echo "    WARNING: skill '$skill' not found in $repo_name/$subfolder" >&2
+            echo "    WARNING: skill '$remote_name' not found in $repo_name/$subfolder" >&2
             (( errors++ )) || true
             continue
         fi
 
-        echo "    Copying $skill ..."
+        if [[ "$remote_name" != "$local_name" ]]; then
+            echo "    Copying $remote_name -> $local_name ..."
+        else
+            echo "    Copying $remote_name ..."
+        fi
         rm -rf "$dst"
         cp -R "$src" "$dst"
-        echo "$skill" >> "$EXTERNAL_MANIFEST"
+        echo "$local_name" >> "$EXTERNAL_MANIFEST"
         (( updated++ )) || true
     done
 done
