@@ -67,6 +67,7 @@ envsubst < "$DOTFILES_DIR/templates/dot_gitconfig.tmpl" > "$HOME/.gitconfig"
 
 mkdir -p "$HOME/.claude"
 cp "$DOTFILES_DIR/config/claude/settings.json" "$HOME/.claude/settings.json"
+cp "$DOTFILES_DIR/config/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 
 if ! command -v claude >/dev/null 2>&1 && ! [[ -x "$HOME/.local/bin/claude" ]]; then
   curl -fsSL https://claude.ai/install.sh | bash
