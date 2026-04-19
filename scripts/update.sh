@@ -3,6 +3,9 @@ set -e
 
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
+source "$DOTFILES_DIR/config/config.sh"
+source "$DOTFILES_DIR/scripts/util.sh"
+
 if [[ "${IS_DARWIN:-0}" == "1" ]] && [[ ! -d "$HOME/.oh-my-zsh" ]]; then
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
