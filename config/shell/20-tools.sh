@@ -1,7 +1,7 @@
-# 1Password CLI plugins
-{{ if eq .chezmoi.os "darwin" -}}
-source {{ .chezmoi.homeDir }}/.config/op/plugins.sh
-{{- end }}
+
+if [ "$USE_1_PASSWORD" = "1" ]; then
+    source "$HOME/.config/op/plugins.sh"
+fi
 
 # Obsidian vault
 for _obsidian_candidate in "$HOME/Dropbox/obsidian/Alex3" "$HOME/Documents/Alex3"; do

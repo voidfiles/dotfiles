@@ -9,3 +9,5 @@ ensure_package() {
     return 1
   fi
 }
+
+export -f ensure_package

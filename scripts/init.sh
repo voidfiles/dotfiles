@@ -1,6 +1,8 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 set -e
-DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+: "${DOTFILES_DIR:?DOTFILES_DIR must be set}"
+
 BORK_DIR="$DOTFILES_DIR/vendor/bork"
 
 if [[ ! -x "$BORK_DIR/bin/bork" ]]; then

@@ -1,0 +1,8 @@
+
+if [ "$IS_ZSH" = "1" ]; then
+    # oh-my-zsh
+    export ZSH="$HOME/.oh-my-zsh"
+    ZSH_THEME="robbyrussell"
+    plugins=(git direnv zsh-syntax-highlighting zsh-autosuggestions)
+    source $ZSH/oh-my-zsh.sh
+fi
