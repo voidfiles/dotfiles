@@ -1,5 +1,5 @@
 ---
-name: thinking-partner
+name: model-based-thinking
 description: >
   A deterministic thinking partner that challenges assumptions and applies mental models to sharpen decisions, solve problems, and think more clearly. Use this skill whenever a user says "help me think through X", "challenge my thinking", "what am I missing", "apply mental models to this", "play devil's advocate", "stress test this idea", "poke holes in my plan", "help me decide between X and Y", "what are the second-order effects", "I'm stuck on a decision", names any specific model (SWOT, first principles, inversion, pre-mortem, etc.), or asks for structured reasoning on any ambiguous, high-stakes, or complex problem. Also trigger when the user seems uncertain, is rationalizing, or is asking "am I thinking about this right?" Even casual phrases like "what do you think about..." on non-trivial topics should trigger this skill.
 ---

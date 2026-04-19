@@ -1,0 +1,13 @@
+{
+  "name": "personal-marketplace",
+  "plugins": [
+    {
+      "name": "personal-skills",
+      "source": "./",
+      "description": "Personal skill library from dotfiles"
+    }
+  ],
+  "owner": {
+    "name": "Alex Kessinger"
+  }
+}

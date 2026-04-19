@@ -37,16 +37,21 @@ The skill works with any coding agent that supports subagent spawning and web se
 
 ### Setup
 
-Create a directory to collect your dialectics. Each dialectic gets its own subdirectory — the skill generates several files (context briefing, monk essays, structural analysis, synthesis, dialectic queue).
+Create a directory to collect your dialectics (e.g., `dialectics/`). Each dialectic gets its own subdirectory — the skill generates several files per round, all prefixed with the round number for easy navigation.
 
 ```
 dialectics/
 ├── tanstack-vs-nextjs/
-│   ├── context_briefing.md
-│   ├── monk_a_output.md
-│   ├── monk_b_output.md
-│   ├── determinate_negation.md
-│   ├── sublation.md
+│   ├── round_1_context_briefing.md
+│   ├── round_1_monk_a.md
+│   ├── round_1_monk_b.md
+│   ├── round_1_determinate_negation.md
+│   ├── round_1_sublation.md
+│   ├── round_1_validation.md
+│   ├── round_2_monk_a.md
+│   ├── round_2_monk_b.md
+│   ├── round_2_determinate_negation.md
+│   ├── round_2_sublation.md
 │   └── dialectic_queue.md
 ├── agent-governance/
 │   └── ...
@@ -61,19 +66,23 @@ dialectics/
    mkdir -p ~/dialectics/my-topic && cd ~/dialectics/my-topic
    ```
 
-2. Start your coding agent in that directory. In Claude Code:
+2. Load the skill and give it your question:
+   ```bash
+   mkdir .claude/skills/hegelian-dialectic-skill
+   wget https://raw.githubusercontent.com/KyleAMathews/hegelian-dialectic-skill/refs/heads/main/SKILL.md
+   mv SKILL.md .claude/skills/hegelian-dialectic-skill
+   ```
+
+2. Start your coding agent in that directory:
    ```bash
    claude
-   ```
 
-3. Load the skill and give it your question:
-   ```
-   /install-skill /path/to/SKILL.md
-
-   I want to explore: [your topic or tension here]
+   /dialectic I want to explore: [your topic or tension here]
    ```
 
    The skill will walk you through the elenctic interview, spawn the Monks, and produce the full dialectical trace — all saved as files in the current directory.
+
+   You can also just run /dialectic to get an introductory help message that walks you through the process.
 
 ### Tips
 
@@ -102,17 +111,17 @@ Two separate AI agents — each in a fresh, isolated context — write fully com
 
 The orchestrator analyzes both essays to find: where each position's own logic undermines itself (self-sublation), what both sides implicitly agree on without realizing it (shared assumptions), and the *specific* way each position fails — not "it's wrong" but "it fails in THIS way, which points toward THIS thing that's missing."
 
-Then comes the Boydian decomposition: shatter both arguments into atomic parts, strip them of which Monk said them, and look for surprising cross-domain connections.
+Then comes Boyd's destructive deduction: shatter both arguments into atomic parts, break the correspondence between each position and its constituents, and scatter them into what Boyd calls a "sea of anarchy." Then the creative induction: find common qualities, attributes, or operations among the scattered parts to build cross-domain connections that were invisible when the parts were trapped inside their original positions. Lateral creativity interventions (compressed conflicts, random Wikipedia domain injection, metaphor generation) inject genuinely external material before the decomposition, so it gets shattered and recombined alongside the monks' material.
 
 ### Phase 5: Sublation (Aufhebung) — synthesize something neither side could reach
 
 The orchestrator generates a synthesis that simultaneously *cancels* both positions as complete truths, *preserves* the genuine insight in each, and *elevates* to a new concept that transforms the question itself.
 
-This is not compromise. It's not "use A for some cases and B for others." It's a reconceptualization — something neither Monk could have conceived from within their frame, but which, once stated, makes the original contradiction *predictable.* The synthesis is an abductive hypothesis: what would make it *unsurprising* that both Monk positions exist with genuine evidence?
+This is not compromise. It's not "use A for some cases and B for others." It's a reconceptualization — something neither Monk could have conceived from within their frame, but which, once stated, makes the original contradiction *predictable.* The synthesis is an abductive hypothesis: what would make it *unsurprising* that both Monk positions exist with genuine evidence? After drafting, a reversibility check (from Boyd) traces each claim back to specific atomic parts from the decomposition — untraceable claims get flagged as either confabulation or new insights needing their own evidence.
 
 ### Phase 6: Validation — did the Monks feel elevated or defeated?
 
-Both Monks evaluate the synthesis: were they *elevated* (their core insight preserved within something larger) or *defeated* (their position just dismissed)? Then a hostile auditor — a fresh agent with no position — attacks the synthesis for hidden assumptions, compromise disguised as transcendence, and structural flaws.
+Both Monks evaluate the synthesis: were they *elevated* (their core insight preserved within something larger) or *defeated* (their position just dismissed)? Then a hostile auditor — a fresh agent with no position — attacks the synthesis for hidden assumptions, compromise disguised as transcendence, structural flaws, and runs its own reversibility check (can each claim trace to material in the essays, or is the synthesis just one monk's structure wearing the other's vocabulary?).
 
 ### Phase 7: Recursion — where the real value lives
 
@@ -138,7 +147,11 @@ Elizabeth Eisenstein argued that the printing press's most transformative effect
 
 LLMs represent the next step: not just fixity and side-by-side comparison, but *automated structural comparison.* Both remaining bottlenecks — research breadth and structural decomposition — are cognitively brutal. Most people abandon the first too early and never attempt the second.
 
-This is where Boyd's "Destruction and Creation" enters. His critical insight: you cannot synthesize something genuinely new by recombining within the same domain. You must first *shatter* existing concepts into atomic parts (destruction), then find cross-domain connections to build something new (creation). This decomposition work — stripping claims from their source, searching for surprising connections — is the structural comparison Eisenstein identified as transformative when print first enabled it. LLMs can do it at a scale and speed that makes multi-round recursive dialectics practical in a single session.
+This is where Boyd's "Destruction and Creation" (1976) enters. Boyd calls the two operations *destructive deduction* (shatter existing conceptual domains, break the correspondence between each concept and its parts, scatter them into a "sea of anarchy") and *creative induction* (find common qualities, attributes, or operations among the scattered parts to synthesize something genuinely new). The critical constraint: the result must NOT reassemble the parts in the same arrangement as any original domain — that's rearrangement, not creation.
+
+Boyd proves this isn't optional. Three pillars: Gödel shows you can't verify a system's consistency from inside it. Heisenberg shows that inward refinement creates observer-observed feedback loops. The Second Law shows that any closed system's entropy necessarily increases. Together: "any inward-oriented and continued effort to improve the match-up of concept with observed reality will only increase the degree of mismatch." You *must* go outside.
+
+This decomposition work — stripping claims from their source, searching for cross-domain connections — is the structural comparison Eisenstein identified as transformative when print first enabled it. LLMs can do it at a scale and speed that makes multi-round recursive dialectics practical in a single session. And Boyd's three pillars explain why each recursive round needs new external material: the system must open itself or face increasing entropy.
 
 ### Hegel: Determinate Negation and Aufhebung
 

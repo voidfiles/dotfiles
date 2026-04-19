@@ -1,6 +1,0 @@
-README.md
-.git
-
-{{ if not (lookPath "op") }}
-.ssh/id_github
-{{ end }}
