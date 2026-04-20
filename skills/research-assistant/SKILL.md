@@ -77,9 +77,11 @@ Create a task for each phase and mark complete as you go:
 
 The decomposition should:
 - Produce 4-7 sub-questions (cap at 7 — more means the scope needs narrowing)
-- Match each sub-question to a source type (web, academic, preprint, enterprise, structured)
+- Match each sub-question to a source type (web, academic, preprint, enterprise, structured, **vault-assets**)
 - Specify a concrete search approach for each
 - Map sub-questions back to the original hypotheses so coverage is clear
+
+**Vault assets** (`/Users/alex/Dropbox/obsidian/Alex3/assets/`) is a first-class source type. It contains PDFs, books, and documents the user has deliberately collected. Always include it as a candidate source for any sub-question — use filename search and, for PDFs, content conversion to assess relevance.
 
 **Output artifact:** Save to `projects/{project}/query-decomposition.md`
 - Each sub-question with source type and search approach
@@ -97,8 +99,8 @@ The decomposition should:
 **Invoke `/deep-research`** using the query decomposition as input. This runs:
 
 1. **Parallel dispatch** — Launch one research agent per sub-question. All agents run concurrently. Each agent:
-   - Executes multiple search strategies for its sub-question
-   - Deep-reads the 3-5 most promising sources (full content, not just snippets)
+   - Executes multiple search strategies for its sub-question, including a vault assets search (see below)
+   - Downloads the full content of EVERY source found (not just the top 3-5) — see Source Download Protocol below
    - Scores each source for credibility (0-100)
    - Returns structured findings: claim, source URL, source type, summary, credibility score
 
@@ -119,10 +121,82 @@ Each worker output should include:
 - All findings with claims, sources, credibility scores
 - A synthesis paragraph identifying key patterns
 
-**Source handling:**
-- For each source cited, record: URL, title/author, source type, credibility score, date accessed
-- If a source cannot be reached (404, paywall, timeout), flag it and present the URL to the user: "I couldn't access these sources. Can you find them and paste the content?"
-- The user may provide source content directly — incorporate it into findings
+---
+
+### Vault Assets Search
+
+Each research worker must query the vault's `/assets/` directory as part of its search strategy. Assets are PDFs, books, and documents the user has deliberately collected — high signal, zero network cost.
+
+```bash
+# Search by filename for relevance to the sub-question keywords
+find /Users/alex/Dropbox/obsidian/Alex3/assets -type f \( -name "*.pdf" -o -name "*.epub" -o -name "*.md" \) \
+  | grep -i "keyword1\|keyword2"
+```
+
+For any relevant file found: convert PDFs using the PDF pipeline (see Source Download Protocol), save to `sources/` with a `[LOCAL]` tag, and include in findings. Treat local assets as high-credibility — deliberately saved implies intentional relevance.
+
+---
+
+### Source Download Protocol
+
+**Download every source, not just the top few.** More raw material = better synthesis. Start with the vault's local assets before going to the web — local PDFs and books are already downloaded, higher signal, and zero cost.
+
+**Step 1 — Identify web source type:**
+- URL ends in `.pdf` or redirects to a PDF → use PDF pipeline
+- Otherwise → use crawl4ai-scrape
+
+**Step 2a — Web pages (crawl4ai-scrape):**
+
+```python
+import asyncio
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from crawl4ai.content_filter_strategy import PruningContentFilter
+from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
+
+async def scrape(url: str) -> str:
+    md_gen = DefaultMarkdownGenerator(
+        content_filter=PruningContentFilter(threshold=0.4, threshold_type="fixed")
+    )
+    cfg = CrawlerRunConfig(
+        cache_mode=CacheMode.BYPASS,
+        markdown_generator=md_gen,
+        remove_overlay_elements=True,
+    )
+    async with AsyncWebCrawler(config=BrowserConfig(headless=True)) as crawler:
+        result = await crawler.arun(url=url, config=cfg)
+    if not result.success or len(result.markdown.fit_markdown) < 100:
+        raise RuntimeError(f"Failed or empty: {url}")
+    return result.markdown.fit_markdown
+```
+
+Run with: `uv run --with crawl4ai python scrape.py`
+
+**Step 2b — PDF sources:**
+
+```bash
+# Download
+curl -L -o /tmp/source.pdf "https://example.com/paper.pdf"
+```
+
+```python
+# Convert to markdown
+import pymupdf4llm
+md = pymupdf4llm.to_markdown("/tmp/source.pdf")
+```
+
+Run with: `uv run --with pymupdf4llm python convert.py`
+
+**Step 3 — Save each downloaded source:**
+- Save to `projects/{project}/sources/{slug}.md` (slug derived from URL/title)
+- Log: URL, slug filename, word count, success/failure
+- If download fails (paywall, 404, bot-blocked): flag it, log the URL, continue — do not stop
+
+**Step 4 — Build findings from downloaded content**, not search snippets. Quote directly from the saved markdown files.
+
+**Failure handling:**
+- Short output (<100 words for a substantial page) → likely bot-blocked; flag and skip
+- PDF conversion error → log and skip; note in worker output
+- After all attempts: present a list of unreachable URLs to the user: "I couldn't access these sources — can you find and paste the content?"
 
 ---
 
@@ -206,6 +280,9 @@ When the research begins, create this structure:
 ├── index.md              — Project home with goals, hypotheses, Hemingway Bridge
 ├── ideation.md           — Phase 1 output
 ├── query-decomposition.md — Phase 2 output
+├── sources/              — Downloaded source files (one .md per URL)
+│   ├── {slug}.md         — Web pages scraped via crawl4ai
+│   └── {slug}.md         — PDFs converted via pymupdf4llm
 ├── research/             — Phase 3 worker outputs
 │   ├── sq1-{slug}.md
 │   ├── sq2-{slug}.md
@@ -229,6 +306,8 @@ The `index.md` serves as the project home and Hemingway Bridge — always update
 **Every phase produces an artifact.** Each phase writes a markdown file with its outcome. This creates a paper trail the user can review, share, and build on. It also means the process is resumable — if interrupted, pick up from the last saved artifact.
 
 **Sources are first-class citizens.** Every claim traces to a URL. Sources that can't be reached are flagged for the user to find manually, not silently dropped. The bibliography is complete — every [N] has an entry.
+
+**Download everything, read from files.** Do not synthesize from search snippets alone. Download the full content of every source — web pages via crawl4ai, PDFs via pymupdf4llm — and save them to `sources/`. Build your findings by reading the saved files. This prevents hallucinated paraphrases and makes the research auditable.
 
 **The user drives direction; the skill drives process.** The skill handles the mechanics (dispatching workers, deduplicating findings, organizing thematically). The user makes the strategic decisions (which directions to pursue, which sub-questions matter, whether the report answers their actual question).
 
