@@ -8,3 +8,8 @@ default:
 
 update:
     scripts/update.sh
+
+test: test-unit
+
+test-unit:
+    test/run.sh unit
