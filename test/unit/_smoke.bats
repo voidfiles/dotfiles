@@ -27,3 +27,29 @@ load '../helpers/common'
   bork foo
   stub_assert_not_called brew
 }
+
+@test "curl stub records and exits 0" {
+  make_scratch_home
+  install_stubs
+  curl -sfL https://example.com
+  stub_assert_called curl -sfL https://example.com
+}
+
+@test "curl stub responds with fixture when rule matches" {
+  make_scratch_home
+  install_stubs
+  fixture="$BATS_TEST_TMPDIR/body.json"
+  printf '{"tag_name":"v9.9.9"}\n' >"$fixture"
+  stub_respond curl 'releases/latest' "$fixture"
+  run curl -sf https://api.github.com/repos/borksh/bork/releases/latest
+  assert_success
+  assert_output --partial '"tag_name":"v9.9.9"'
+}
+
+@test "git clone stub copies fixture into destination" {
+  make_scratch_home
+  install_stubs
+  dst="$BATS_TEST_TMPDIR/cloned"
+  git clone --depth=1 --quiet https://github.com/x/hegelian-dialectic-skill.git "$dst"
+  assert_file_exists "$dst/SKILL.md"
+}
