@@ -32,4 +32,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Bootstrap PATH with vendored bork
+        run: echo "${{ github.workspace }}/vendor/bork/bin" >> $GITHUB_PATH
+      - name: Install coreutils for GNU timeout (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install coreutils
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> $GITHUB_PATH
       - run: test/run.sh integration
