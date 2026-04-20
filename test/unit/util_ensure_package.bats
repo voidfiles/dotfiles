@@ -7,6 +7,9 @@ setup() {
   install_stubs
 }
 
+# NOTE: _stub_uname writes to the shared test/stubs/ directory in the repo root.
+# This is safe for serial bats runs (the default). Do NOT use bats --jobs N without
+# converting this to write into $BATS_TEST_TMPDIR and prepend that dir to PATH instead.
 _stub_uname() {
   local output="$1"
   cat >"$DOTFILES_REPO_ROOT/test/stubs/uname" <<EOF
