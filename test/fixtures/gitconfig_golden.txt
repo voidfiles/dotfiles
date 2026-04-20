@@ -1,0 +1,9 @@
+[user]
+    name = tester
+    email = test@example.com
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = false

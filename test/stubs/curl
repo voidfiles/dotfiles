@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -uo pipefail
+args="$*"
+printf 'curl %s\n' "$args" >>"$STUB_LOG"
+
+for var in $(compgen -v | grep '^STUB_RESPOND_curl' || true); do
+  rule="${!var}"
+  match="${rule%%::*}"
+  fixture="${rule##*::}"
+  if [[ "$args" =~ $match ]]; then
+    cat "$fixture"
+    exit 0
+  fi
+done
+exit 0

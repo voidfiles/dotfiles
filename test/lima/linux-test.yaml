@@ -1,0 +1,19 @@
+# Ubuntu 24.04 arm64 VM for integration testing.
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+
+vmType: "vz"
+cpus: 4
+memory: "4GiB"
+disk: "20GiB"
+
+mounts:
+  - location: "~"
+    writable: false
+  - location: "../.."
+    mountPoint: "/workspace/dotfiles"
+    writable: true
+
+networks:
+  - mode: shared
