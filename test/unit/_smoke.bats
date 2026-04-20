@@ -13,3 +13,17 @@ load '../helpers/common'
   assert_dir_exists "$HOME/.local/share/dotfiles"
   assert_equal "$(readlink "$HOME/.local/share/dotfiles")" "$DOTFILES_REPO_ROOT"
 }
+
+@test "stub records its invocation" {
+  make_scratch_home
+  install_stubs
+  bork do ok brew foo
+  stub_assert_called bork do ok brew foo
+}
+
+@test "stub_assert_not_called passes when cmd never ran" {
+  make_scratch_home
+  install_stubs
+  bork foo
+  stub_assert_not_called brew
+}
