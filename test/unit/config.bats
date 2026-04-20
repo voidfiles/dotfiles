@@ -8,8 +8,9 @@ setup() {
 
 _read_flag() {
   local flag="$1"; shift
-  local extra="${*:-true}"
-  bash -c "HOME='$HOME'; $extra; source '$DOTFILES_REPO_ROOT/config/config.sh' >/dev/null 2>&1; printf '%s' \"\${$flag}\""
+  local extra="$*"
+  local setup="${extra:+$extra; }"
+  bash -c "HOME='$HOME'; ${setup}source '$DOTFILES_REPO_ROOT/config/config.sh' >/dev/null 2>&1; printf '%s' \"\${$flag}\""
 }
 
 @test "IS_ZSH=1 and IS_BASH=0 when SHELL_TO_USE is unset" {
