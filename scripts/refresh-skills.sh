@@ -32,10 +32,12 @@ SKILL_SOURCES=(
 rename_skill_frontmatter() {
     local dir="$1" old_name="$2" new_name="$3"
     [[ "$old_name" == "$new_name" ]] && return 0
+    local sed_i
+    if [[ "$(uname)" == "Darwin" ]]; then sed_i=(-i ''); else sed_i=(-i); fi
     while IFS= read -r -d '' md_file; do
         # Only touch files whose frontmatter name matches the old name
         if head -10 "$md_file" | grep -q "^name: ${old_name}$"; then
-            sed -i '' "s/^name: ${old_name}$/name: ${new_name}/" "$md_file"
+            sed "${sed_i[@]}" "s/^name: ${old_name}$/name: ${new_name}/" "$md_file"
             echo "    Renamed frontmatter name in $(basename "$md_file")"
         fi
     done < <(find "$dir" -maxdepth 2 -name '*.md' -print0)
