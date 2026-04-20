@@ -59,7 +59,7 @@ Create a task for each phase and mark complete as you go:
 3. **Hypothesis Formulation** — Make selected questions precise enough to research
 4. **Problem Selection** — Score and prioritize using generality, learning value, feasibility, impact
 
-**Output artifact:** Save to `{project}/ideation.md`
+**Output artifact:** Save to `projects/{project}/ideation.md`
 - All candidate directions explored
 - The expansion techniques applied and what they revealed
 - Formulated hypotheses with falsifiability tests
@@ -81,7 +81,7 @@ The decomposition should:
 - Specify a concrete search approach for each
 - Map sub-questions back to the original hypotheses so coverage is clear
 
-**Output artifact:** Save to `{project}/query-decomposition.md`
+**Output artifact:** Save to `projects/{project}/query-decomposition.md`
 - Each sub-question with source type and search approach
 - Source plan summary table
 - Hypothesis mapping (which sub-questions feed which hypotheses)
@@ -112,7 +112,7 @@ The decomposition should:
    - Sources that couldn't be reached → present URLs to user so they can find them manually
    - Contradictions between workers' findings → preserve both sides
 
-**Output artifacts:** Save individual worker results to `{project}/research/sq{N}-{slug}.md`
+**Output artifacts:** Save individual worker results to `projects/{project}/research/sq{N}-{slug}.md`
 
 Each worker output should include:
 - The sub-question it was answering
