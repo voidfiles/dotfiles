@@ -5,6 +5,7 @@ import json
 import sqlite3
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -19,6 +20,7 @@ def create_test_db(path: Path, recordings: list[dict]) -> None:
         datetime_utc: str  - UTC timestamp "YYYY-MM-DD HH:MM:SS.000"
         duration_ms: float - duration in milliseconds
         transcript: str    - the raw transcript text
+        folder_name: str   - (optional) folder name for meta.json lookup
     """
     conn = sqlite3.connect(str(path))
     conn.execute("""
@@ -56,9 +58,10 @@ def create_test_db(path: Path, recordings: list[dict]) -> None:
 
     for i, rec in enumerate(recordings):
         rec_id = f"rec-{i:04d}"
+        folder_name = rec.get("folder_name", f"folder-{i:04d}")
         conn.execute(
-            "INSERT INTO recording (id, datetime, duration) VALUES (?, ?, ?)",
-            (rec_id, rec["datetime_utc"], rec["duration_ms"]),
+            "INSERT INTO recording (id, datetime, duration, folderName) VALUES (?, ?, ?, ?)",
+            (rec_id, rec["datetime_utc"], rec["duration_ms"], folder_name),
         )
         # The rowid is auto-assigned sequentially starting at 1
         rowid = i + 1
@@ -71,13 +74,14 @@ def create_test_db(path: Path, recordings: list[dict]) -> None:
     conn.close()
 
 
-def run_export(db_path: Path, date: str) -> subprocess.CompletedProcess:
+def run_export(
+    db_path: Path, date: str, recordings_dir: Path | None = None
+) -> subprocess.CompletedProcess:
     """Run the export script and return the result."""
-    return subprocess.run(
-        [sys.executable, str(SCRIPT), "--db", str(db_path), "--date", date],
-        capture_output=True,
-        text=True,
-    )
+    cmd = [sys.executable, str(SCRIPT), "--db", str(db_path), "--date", date]
+    if recordings_dir is not None:
+        cmd.extend(["--recordings-dir", str(recordings_dir)])
+    return subprocess.run(cmd, capture_output=True, text=True)
 
 
 def get_local_date_for_utc(utc_hour: int = 18) -> tuple[str, str]:
@@ -298,6 +302,80 @@ def test_multiple_recordings_ordered():
     print("  PASS: test_multiple_recordings_ordered")
 
 
+def test_segments_transcript_preferred():
+    """When meta.json has segments, the formatted speaker transcript is used."""
+    utc_ts, local_date = get_local_date_for_utc(18)
+    folder_name = "test-segments-folder"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        recordings_dir = Path(tmpdir)
+        # Create meta.json with segments
+        folder_path = recordings_dir / folder_name
+        folder_path.mkdir()
+        meta = {
+            "segments": [
+                {"text": "Hello there.", "start": 0.0, "end": 1.0, "speaker": 0, "confidence": 1},
+                {"text": "How are you?", "start": 1.0, "end": 2.0, "speaker": 0, "confidence": 1},
+                {"text": "I'm good, thanks.", "start": 2.0, "end": 3.5, "speaker": 1, "confidence": 1},
+                {"text": "Great to hear.", "start": 3.5, "end": 4.5, "speaker": 0, "confidence": 1},
+            ]
+        }
+        (folder_path / "meta.json").write_text(json.dumps(meta))
+
+        with NamedTemporaryFile(suffix=".sqlite") as tmp:
+            db_path = Path(tmp.name)
+            create_test_db(db_path, [
+                {
+                    "datetime_utc": utc_ts,
+                    "duration_ms": 300000.0,
+                    "transcript": "Hello there. How are you? I'm good, thanks. Great to hear.",
+                    "folder_name": folder_name,
+                },
+            ])
+
+            result = run_export(db_path, local_date, recordings_dir)
+            assert result.returncode == 0, f"Expected exit 0, got {result.returncode}: {result.stderr}"
+
+            manifest = json.loads(result.stdout)
+            transcript = manifest["recordings"][0]["transcript"]
+            # Should have speaker labels with timestamps
+            assert "**Speaker 0** [00:00]:" in transcript
+            assert "**Speaker 1** [00:02]:" in transcript
+            # Consecutive same-speaker segments should be grouped
+            assert "Hello there. How are you?" in transcript
+            assert "I'm good, thanks." in transcript
+
+    print("  PASS: test_segments_transcript_preferred")
+
+
+def test_falls_back_to_db_transcript_without_meta():
+    """When no meta.json exists, falls back to the database transcript."""
+    utc_ts, local_date = get_local_date_for_utc(18)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        recordings_dir = Path(tmpdir)
+        # No meta.json created
+
+        with NamedTemporaryFile(suffix=".sqlite") as tmp:
+            db_path = Path(tmp.name)
+            create_test_db(db_path, [
+                {
+                    "datetime_utc": utc_ts,
+                    "duration_ms": 300000.0,
+                    "transcript": "Plain transcript without speakers.",
+                    "folder_name": "nonexistent-folder",
+                },
+            ])
+
+            result = run_export(db_path, local_date, recordings_dir)
+            assert result.returncode == 0, f"Expected exit 0, got {result.returncode}: {result.stderr}"
+
+            manifest = json.loads(result.stdout)
+            assert manifest["recordings"][0]["transcript"] == "Plain transcript without speakers."
+
+    print("  PASS: test_falls_back_to_db_transcript_without_meta")
+
+
 if __name__ == "__main__":
     tests = [
         test_basic_export,
@@ -307,6 +385,8 @@ if __name__ == "__main__":
         test_missing_database_exits_1,
         test_boundary_duration_included,
         test_multiple_recordings_ordered,
+        test_segments_transcript_preferred,
+        test_falls_back_to_db_transcript_without_meta,
     ]
 
     print(f"Running {len(tests)} tests...")

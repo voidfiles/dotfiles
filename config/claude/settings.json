@@ -13,7 +13,7 @@
     "personal-marketplace": {
       "source": {
         "source": "directory",
-        "path": "/Users/alex/.local/share/dotfiles"
+        "path": "~/.local/share/dotfiles"
       }
     }
   },

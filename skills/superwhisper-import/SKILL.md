@@ -159,10 +159,10 @@ For each assignment (ordered by recording time):
 **If `is_new` is false (existing file):**
 1. Read the existing file content
 2. Find the `# Transcript` heading:
-   - If found and content exists below it: append `\n\n---\n\n*Recording at {time} ({duration})*\n\n{transcript}`
+   - If found and **non-trivial content exists below it** (more than just whitespace): **skip this file**. Report it as "already has transcript" in the summary. Do NOT overwrite or append.
    - If found but empty below: append `\n{transcript}`
    - If NOT found: append `\n\n# Transcript\n\n{transcript}` at end of file
-3. Write the updated content
+3. Write the updated content (only if not skipped)
 
 **Multiple recordings → same file:**
 - Append in chronological order
@@ -176,6 +176,7 @@ Done! Wrote {N} transcripts:
   ✓ Alex + Chase.md (31m 49s)
   ✓ Kevin + Alex.md (19m 58s)
   + 2026-04-29 12-32 Recording.md (new, 31m 22s)
+  ⊘ Team Standup.md (already has transcript, skipped)
 ```
 
 ---
