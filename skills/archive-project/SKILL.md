@@ -1,3 +1,8 @@
+---
+name: archive-project
+description: Use when archiving a completed Obsidian project, moving it to archives, updating wiki links, and logging completion.
+---
+
 # Archive Project
 
 Archives a completed project by moving it to `archives/projects/`, updating all wiki links across the vault, and logging the completion to today's daily note.

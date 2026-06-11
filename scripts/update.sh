@@ -76,6 +76,13 @@ fi
 
 cp "$DOTFILES_DIR/config/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 
+if [[ -L "$HOME/.claude/workflows" ]]; then
+  rm "$HOME/.claude/workflows"
+elif [[ -d "$HOME/.claude/workflows" ]]; then
+  rm -rf "$HOME/.claude/workflows"
+fi
+ln -s "$DOTFILES_DIR/config/claude/workflows" "$HOME/.claude/workflows"
+
 # Register directory-based marketplaces in Claude Code's plugin cache so they
 # are available immediately without waiting for Claude to resolve them on next
 # startup. Reads extraKnownMarketplaces from the just-written settings.json and

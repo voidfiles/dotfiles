@@ -89,11 +89,17 @@ def should_update_link(link: WikiLink, old_path: Path, vault_root: Path, is_fold
     if is_folder_move:
         # For folder moves, check if link is to any file within the folder
         old_rel = old_path.relative_to(vault_root)
-        # Check if link starts with the folder path
-        if '/' in link_target:
-            link_folder = link_target.split('/')[0]
-            return str(old_rel).startswith(link_folder) or link_folder == old_rel.name
-        return False
+        if '/' not in link_target:
+            return False
+        # Match the folder as a whole path prefix, or folder-name-relative
+        # links like [[folder/file]]. A bare startswith would also catch
+        # sibling folders sharing a name prefix (music vs music-theory).
+        old_rel_str = str(old_rel).replace('\\', '/')
+        return (
+            link_target == old_rel_str
+            or link_target.startswith(old_rel_str + '/')
+            or link_target.split('/')[0] == old_rel.name
+        )
     else:
         # For file moves, check if link matches the file
         old_rel = old_path.relative_to(vault_root)
@@ -147,10 +153,14 @@ def calculate_new_link_target(
             link_parts[0] = str(new_rel).replace('\\', '/')
             new_target = '/'.join(link_parts)
         else:
-            # Link uses full path - replace the old folder path
+            # Link uses full path - swap the old folder prefix, anchored at
+            # the start so prefix-sharing siblings are left alone
             old_path_str = str(old_rel).replace('\\', '/')
             new_path_str = str(new_rel).replace('\\', '/')
-            new_target = link.target.replace(old_path_str, new_path_str)
+            if link.target == old_path_str or link.target.startswith(old_path_str + '/'):
+                new_target = new_path_str + link.target[len(old_path_str):]
+            else:
+                new_target = link.target
     elif '/' in link.target:
         # File move with path - use full relative path
         new_target = str(new_rel).replace('\\', '/')

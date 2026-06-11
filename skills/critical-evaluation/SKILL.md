@@ -1,9 +1,9 @@
-<!-- Source: synthesized from scientific-critical-thinking.md, scholar-evaluation.md, peer-review.md -->
-
 ---
 name: critical-evaluation
-description: Assess evidence quality and research rigor using GRADE evidence levels, Cochrane Risk of Bias domains, and the ScholarEval 8-dimension scoring rubric to produce a defensible verdict on any paper or source.
+description: Use when assessing evidence quality, source credibility, research rigor, paper methods, or confidence in a finding.
 ---
+
+<!-- Source: synthesized from scientific-critical-thinking.md, scholar-evaluation.md, peer-review.md -->
 
 # Critical Evaluation
 

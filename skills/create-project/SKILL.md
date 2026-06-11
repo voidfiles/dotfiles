@@ -1,9 +1,6 @@
 ---
-extracted: false
-highlighted: true
-highlighted_date: 2026-01-23
-processed: false
-type: unknown
+name: create-project
+description: Use when creating an Obsidian project home from source notes, meetings, action items, and related context.
 ---
 
 # Project Home
@@ -14,7 +11,12 @@ Don't try to guess at what needs to be done. Use source material to generate act
 
 ## Process
 
-1. **Research Related Notes**
+1. **Create the project folder and index**
+   - Folder name: `projects/{lowercase-kebab-case-name}/`
+   - File: `projects/{name}/index.md`
+   - The index.md **must** include a `description` field in frontmatter (1-2 sentences)
+
+2. **Research Related Notes**
    - Search for notes from the last 2-3 months related to the project
    - Look for:
      - Direct mentions of the project name
@@ -23,22 +25,22 @@ Don't try to guess at what needs to be done. Use source material to generate act
      - Action items or decisions
    - Cast a wide net to capture all relevant context
 
-2. **Create Project Summary**
+3. **Create Project Summary**
    - What is this project about?
    - What's the current status?
    - What's been done?
    - What's left to do?
 
-3. **Extract Action Items**
+4. **Extract Action Items**
    - Immediate next steps
 
-4. **Set Up Weekly Updates Structure**
+5. **Set Up Weekly Updates Structure**
    - Create a dedicated section for weekly changes
    - Include template for consistent updates
 
 ## Output Format
 
-Create a project home document: [project_template.md](project_template.md)
+Create `projects/{name}/index.md` using the template: [project_template.md](project_template.md)
 
 ## Guidelines
 

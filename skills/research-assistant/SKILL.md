@@ -139,11 +139,12 @@ For any relevant file found: convert PDFs using the PDF pipeline (see Source Dow
 
 ### Source Download Protocol
 
-**Download every source, not just the top few.** More raw material = better synthesis. Start with the vault's local assets before going to the web — local PDFs and books are already downloaded, higher signal, and zero cost.
+**Every source must end up as a `.md` file in `projects/{project}/sources/` before it can be cited.** This is non-negotiable — no source is usable until it has been converted to markdown. Web pages, PDFs, local vault files, all of it. Markdown is the universal format.
 
-**Step 1 — Identify web source type:**
-- URL ends in `.pdf` or redirects to a PDF → use PDF pipeline
-- Otherwise → use crawl4ai-scrape
+**Step 1 — Route by source type:**
+- Local vault file (already on disk as `.pdf`) → PDF pipeline → save as `.md`
+- Remote URL ending in `.pdf` or that redirects to a PDF → download → PDF pipeline → save as `.md`
+- All other remote URLs → crawl4ai-scrape (returns markdown directly) → save as `.md`
 
 **Step 2a — Web pages (crawl4ai-scrape):**
 
@@ -186,17 +187,30 @@ md = pymupdf4llm.to_markdown("/tmp/source.pdf")
 
 Run with: `uv run --with pymupdf4llm python convert.py`
 
-**Step 3 — Save each downloaded source:**
-- Save to `projects/{project}/sources/{slug}.md` (slug derived from URL/title)
-- Log: URL, slug filename, word count, success/failure
-- If download fails (paywall, 404, bot-blocked): flag it, log the URL, continue — do not stop
+**Step 3 — Save each downloaded source and track failures:**
+- On success: save to `projects/{project}/sources/{slug}.md` (slug derived from URL/title)
+- On any failure (404, paywall, bot-block, PDF error, short output <100 words): append to `projects/{project}/sources/failed.md` in this format:
+
+```markdown
+## Failed Sources
+
+| URL | Reason | Sub-question |
+|-----|--------|--------------|
+| https://... | 404 | sq1-topic |
+| https://... | Paywall | sq2-topic |
+```
+
+Never silently discard a failure — every unreachable source goes in `failed.md`.
 
 **Step 4 — Build findings from downloaded content**, not search snippets. Quote directly from the saved markdown files.
 
-**Failure handling:**
-- Short output (<100 words for a substantial page) → likely bot-blocked; flag and skip
-- PDF conversion error → log and skip; note in worker output
-- After all attempts: present a list of unreachable URLs to the user: "I couldn't access these sources — can you find and paste the content?"
+**Step 5 — After all workers complete, present `failed.md` to the user:**
+
+> "I couldn't download these sources. Could you find and paste the content for any you have access to?"
+>
+> [paste the failed sources table]
+
+Wait for the user to respond. If they provide content for any source, save it to `sources/{slug}.md` and incorporate it into findings before proceeding to Phase 4. If they can't find them, those sources are dropped from the citation pool.
 
 ---
 
@@ -205,6 +219,15 @@ Run with: `uv run --with pymupdf4llm python convert.py`
 **Goal:** Transform parallel worker findings into a unified, thematic, citation-backed research report.
 
 **Run the synthesis inline** (do not invoke a separate skill — you have all findings in context). Follow these steps:
+
+### Step 0: Source Gate — No Download, No Citation
+
+Before writing a single sentence, audit the source list from Phase 3:
+
+- Every source you intend to cite must exist as a `.md` file in `projects/{project}/sources/`
+- If a source appears in findings but has no `.md` file (search snippet, abstract, or title only), run it through the Source Download Protocol now — convert it to markdown before proceeding
+- If it still can't be converted, add it to `sources/failed.md`, drop it from the citation pool, and note it in the Limitations section
+- **You may not cite a source that has not been converted to markdown and saved to `sources/`.** No exceptions. Snippets, abstracts, and search result summaries do not count.
 
 ### Step 1: Deduplication
 - Identify claims that express the same assertion across multiple workers
@@ -282,7 +305,8 @@ When the research begins, create this structure:
 ├── query-decomposition.md — Phase 2 output
 ├── sources/              — Downloaded source files (one .md per URL)
 │   ├── {slug}.md         — Web pages scraped via crawl4ai
-│   └── {slug}.md         — PDFs converted via pymupdf4llm
+│   ├── {slug}.md         — PDFs converted via pymupdf4llm
+│   └── failed.md         — Sources that couldn't be downloaded (presented to user)
 ├── research/             — Phase 3 worker outputs
 │   ├── sq1-{slug}.md
 │   ├── sq2-{slug}.md

@@ -341,7 +341,7 @@ Search for relevant context (last 1-2 weeks):
 
 1. **People mentioned:** Find notes about participants
    - Search: `[[Person Name]]` mentions
-   - Check: `/people/` folder if it exists
+   - Check: `person/work/{name}/index.md` for work colleagues
 
 2. **Topics discussed:** Find related notes
    - Search for theme keywords

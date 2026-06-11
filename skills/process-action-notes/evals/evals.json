@@ -1,0 +1,39 @@
+{
+  "skill_name": "process-action-notes",
+  "notes": "Evals run against a synthetic fixture vault (built by ../process-action-notes-workspace/build_fixture.py), never the real Dropbox vault, because the skill moves files and rewrites links. {VAULT} is substituted per run with that run's isolated vault copy. All evals grant blanket approval so the agent runs end-to-end (the real skill confirms each note interactively).",
+  "evals": [
+    {
+      "id": 0,
+      "name": "full-autonomous",
+      "prompt": "I've been leaving #action tags all over my Obsidian vault (it's at {VAULT}) as a kind of to-do queue. Can you process them all? Use your best judgment on where things should go, you don't need to stop and check with me on each one, just run it and tell me what you did.",
+      "expected_output": "Atomic notes extracted from the two #action/atomic-note notes into areas/; all four known notes moved to their right PARA bucket; the unknown #action/bridge note left alone; sources de-tagged; no broken wiki links.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "clear-queue",
+      "prompt": "clear my action note queue in obsidian (vault is {VAULT}) — atomize the ones marked for it and file everything where it belongs. go ahead and run the whole thing, i trust your judgment on folders.",
+      "expected_output": "Same end state: atomic notes created before moves, all moves done, links intact, bridge untouched.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "specific-verbs",
+      "prompt": "process my #action/atomic-note and #action/move-area and #action/move-resources notes in the vault at {VAULT}. don't ask me to confirm each one, just use sensible destinations and run it.",
+      "expected_output": "All three verbs handled, atomics before moves, bridge ignored, links fixed.",
+      "files": []
+    }
+  ],
+  "assertions": [
+    {"name": "atomic_notes_for_blog", "text": "At least one atomic note derived from 'Blog Post Ideas' was created under areas/, with an #atomic/ tag and a back-link to the source."},
+    {"name": "atomic_notes_for_rss", "text": "At least one atomic note derived from 'Why support RSS' was created under areas/."},
+    {"name": "no_atomic_for_nonatomic", "text": "No atomic notes were generated from 'Markup is the new Cursive', 'Old Postgres Tuning Notes', or 'The art of action'."},
+    {"name": "blog_moved_to_area", "text": "'Blog Post Ideas.md' no longer lives in inbox/ and now exists somewhere under areas/."},
+    {"name": "rss_moved_to_area", "text": "'Why support RSS.md' moved out of inbox/ into areas/."},
+    {"name": "markup_moved_to_area", "text": "'Markup is the new Cursive.md' moved out of inbox/ into areas/."},
+    {"name": "postgres_moved_to_resources", "text": "'Old Postgres Tuning Notes.md' moved out of inbox/ into resources/."},
+    {"name": "bridge_untouched", "text": "'The art of action.md' (unknown verb #action/bridge) is still in inbox/ and still carries its #action/bridge tag."},
+    {"name": "sources_detagged", "text": "The processed/moved notes no longer contain any '#action/' tag."},
+    {"name": "no_broken_wikilinks", "text": "Every wiki link in the final vault resolves to an existing markdown file (by basename or path). This is the core test that atomic notes were created before moves."}
+  ]
+}

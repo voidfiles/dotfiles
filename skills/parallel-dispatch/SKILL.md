@@ -1,9 +1,9 @@
-<!-- Source: synthesized from deep-research-team-orchestrator.md, deep-research-team-coordinator.md, feynman-researcher-agent.md, feynman-system-prompt.md -->
-
 ---
 name: parallel-dispatch
-description: Dispatch N independent research workers in parallel using the Task tool, collect their results, and merge findings with per-worker source attribution preserved.
+description: Use when running independent research sub-questions in parallel and collecting attributed findings for synthesis.
 ---
+
+<!-- Source: synthesized from deep-research-team-orchestrator.md, deep-research-team-coordinator.md, feynman-researcher-agent.md, feynman-system-prompt.md -->
 
 You are executing a parallel dispatch step. Your job is to spawn independent research workers for each sub-question, collect their outputs, and assemble results into a attributed finding set ready for synthesis.
 
