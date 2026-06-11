@@ -100,8 +100,10 @@ _patch=$(jq -r --arg now "$_now" '
 
 jq --argjson patch "$_patch" '. * $patch' "$_km" > "${_km}.tmp" && mv "${_km}.tmp" "$_km"
 
-# Register enabled directory-based plugins in installed_plugins.json and set up
-# cache symlinks so Claude Code sees them without a manual /plugins install.
+# Register enabled directory-based plugins in installed_plugins.json.
+# We point installPath directly at the source directory rather than symlinking
+# through the cache, because Claude Code's marketplace refresh nukes cache
+# entries it didn't create.
 _ip="$HOME/.claude/plugins/installed_plugins.json"
 [[ -f "$_ip" ]] || echo '{"version":2,"plugins":{}}' > "$_ip"
 
@@ -110,32 +112,24 @@ jq -r '
   | select(.value.source.source == "directory")
   | [.key, (.value.source.path | gsub("^~"; env.HOME))] | @tsv
 ' "$HOME/.claude/settings.json" | while IFS=$'\t' read -r mk_name mk_path; do
-  # Read the marketplace's plugin list and register each enabled one
   _mkt_file="$mk_path/.claude-plugin/marketplace.json"
   [[ -f "$_mkt_file" ]] || continue
 
-  jq -r '.plugins[]? | .name' "$_mkt_file" | while read -r plugin_name; do
+  jq -r '.plugins[]? | [.name, .source] | @tsv' "$_mkt_file" | while IFS=$'\t' read -r plugin_name plugin_source; do
     _key="${plugin_name}@${mk_name}"
 
-    # Skip if not enabled
     _enabled=$(jq -r --arg k "$_key" '.enabledPlugins[$k] // false' "$HOME/.claude/settings.json")
     [[ "$_enabled" == "true" ]] || continue
 
-    # Read version from plugin.json
     _ver=$(jq -r '.version // "1.0.0"' "$mk_path/.claude-plugin/plugin.json")
-    _cache_dir="$HOME/.claude/plugins/cache/${mk_name}/${plugin_name}/${_ver}"
 
-    # Symlink the source dir into the cache so Claude reads skills from there
-    mkdir -p "$(dirname "$_cache_dir")"
-    if [[ -L "$_cache_dir" ]]; then
-      rm "$_cache_dir"
-    elif [[ -d "$_cache_dir" ]]; then
-      rm -rf "$_cache_dir"
+    # Resolve the plugin's install path from the marketplace source field
+    _plugin_dir="$mk_path"
+    if [[ -n "$plugin_source" && "$plugin_source" != "./" && "$plugin_source" != "." ]]; then
+      _plugin_dir="$mk_path/${plugin_source#./}"
     fi
-    ln -s "$mk_path" "$_cache_dir"
 
-    # Upsert into installed_plugins.json
-    jq --arg key "$_key" --arg path "$_cache_dir" --arg ver "$_ver" --arg now "$_now" '
+    jq --arg key "$_key" --arg path "$_plugin_dir" --arg ver "$_ver" --arg now "$_now" '
       .plugins[$key] = [{
         scope: "user",
         installPath: $path,
