@@ -1,5 +1,5 @@
 ---
-argument-hint: [content-types or empty for all, e.g., "daily,meetings" or "articles"]
+argument-hint: "content-types or empty for all, e.g., daily,meetings or articles"
 description: "[DEPRECATED] Use /process-vault instead. Orchestrates the full inbox processing pipeline."
 name: process-inbox
 version: 1.0.0

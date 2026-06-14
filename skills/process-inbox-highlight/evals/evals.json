@@ -1,0 +1,122 @@
+{
+  "skill_name": "process-inbox-highlight-v2",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "shame-defusion-research-file",
+      "prompt": "highlight /Users/alex/Dropbox/obsidian/Alex3/projects/opportunity-mindset/research/sq1-shame-defusion.md using the knowledge-highlight-v2 skill. Use --vault-root /Users/alex/Dropbox/obsidian/Alex3 and --verbose so I can see what happens. Don't use --force, just process it normally.",
+      "expected_output": "File updated with **bold** and ==**highlighted**== passages. Bolded content should favour specific claims (shame vs guilt distinction), evidence passages (effect sizes, study details), and mechanism insights. Layer 2 highlights should capture the 1-2 most pivotal findings.",
+      "files": ["/Users/alex/Dropbox/obsidian/Alex3/projects/opportunity-mindset/research/sq1-shame-defusion.md"],
+      "assertions": [
+        {
+          "name": "frontmatter-highlighted-true",
+          "description": "Output file contains 'highlighted: true' in frontmatter",
+          "type": "programmatic"
+        },
+        {
+          "name": "minimum-three-bold-passages",
+          "description": "Output body contains at least 3 **bold** passages (count '**' pairs not inside '==**')",
+          "type": "programmatic"
+        },
+        {
+          "name": "at-least-one-highlight",
+          "description": "Output body contains at least 1 ==**highlighted**== passage",
+          "type": "programmatic"
+        },
+        {
+          "name": "shame-withdrawal-claim-bolded",
+          "description": "A bolded passage contains both 'shame' and at least one of: 'withdrawal', 'avoidance', 'goal-inconsistent' — the core load-bearing claim of this file",
+          "type": "programmatic"
+        },
+        {
+          "name": "specific-probability-or-effect-size-bolded",
+          "description": "At least one bolded passage includes a specific numeric value like '0.23', '0.69', 'SMD', 'p=' or 'd =' — evidence that the evidence frame fired",
+          "type": "programmatic"
+        },
+        {
+          "name": "no-formatting-artifacts",
+          "description": "No double-bold (****) or double-highlight (====) artifacts appear anywhere in the output",
+          "type": "programmatic"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "environmental-leverage-research-file",
+      "prompt": "Run knowledge-highlight-v2 on /Users/alex/Dropbox/obsidian/Alex3/projects/opportunity-mindset/research/sq5-environmental-leverage.md with --vault-root /Users/alex/Dropbox/obsidian/Alex3 and --verbose. After it runs, show me which passages were bolded and which were highlighted, and tell me whether the highlights feel like the right 'essence' — claims with the strongest evidence.",
+      "expected_output": "File updated. Bolded passages should cover key effect sizes (SMD values for sleep deprivation, exercise), mechanism claims (habit formation, amygdala reactivity), and the comparative claim about environmental vs cognitive interventions. Layer 2 highlights should land on the 1-2 passages with both a clear claim AND a specific effect size.",
+      "files": ["/Users/alex/Dropbox/obsidian/Alex3/projects/opportunity-mindset/research/sq5-environmental-leverage.md"],
+      "assertions": [
+        {
+          "name": "frontmatter-highlighted-true",
+          "description": "Output file contains 'highlighted: true' in frontmatter",
+          "type": "programmatic"
+        },
+        {
+          "name": "minimum-three-bold-passages",
+          "description": "Output body contains at least 3 **bold** passages",
+          "type": "programmatic"
+        },
+        {
+          "name": "at-least-one-highlight",
+          "description": "Output body contains at least 1 ==**highlighted**== passage",
+          "type": "programmatic"
+        },
+        {
+          "name": "environmental-vs-cognitive-claim-bolded",
+          "description": "A bolded passage addresses the comparative claim — contains 'environmental' or 'substrate' alongside 'cognitive' or 'reframing'",
+          "type": "programmatic"
+        },
+        {
+          "name": "smd-effect-size-bolded",
+          "description": "At least one bolded passage contains 'SMD' or specific sleep/exercise effect size values — evidence the evidence frame captured quantitative findings",
+          "type": "programmatic"
+        },
+        {
+          "name": "no-formatting-artifacts",
+          "description": "No **** or ==== artifacts in output",
+          "type": "programmatic"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "research-report-fast-mode",
+      "prompt": "I want to highlight the research report at /Users/alex/Dropbox/obsidian/Alex3/projects/opportunity-mindset/research-report.md using the new knowledge highlight v2 skill. Run it with --fast mode (LLM passes only, skip graph analysis) since the file is long. Use --vault-root /Users/alex/Dropbox/obsidian/Alex3",
+      "expected_output": "File updated in fast mode. Bolded passages should cover the five high-confidence findings from the executive summary section plus key effect sizes from themes. Layer 2 highlights should capture the 2-3 most actionable/surprising findings (e.g. implementation intentions d≈0.65, acceptance severing emotion-avoidance coupling, sleep SMD≈-0.94).",
+      "files": ["/Users/alex/Dropbox/obsidian/Alex3/projects/opportunity-mindset/research-report.md"],
+      "assertions": [
+        {
+          "name": "frontmatter-highlighted-true",
+          "description": "Output file contains 'highlighted: true' in frontmatter",
+          "type": "programmatic"
+        },
+        {
+          "name": "minimum-five-bold-passages",
+          "description": "Output body contains at least 5 **bold** passages (longer doc, expect more coverage)",
+          "type": "programmatic"
+        },
+        {
+          "name": "at-least-two-highlights",
+          "description": "Output body contains at least 2 ==**highlighted**== passages",
+          "type": "programmatic"
+        },
+        {
+          "name": "implementation-intention-finding-bolded",
+          "description": "A bolded passage mentions implementation intentions (contains 'implementation intention' or 'if-then' or 'd ≈ 0.65') — the single highest-confidence intervention finding",
+          "type": "programmatic"
+        },
+        {
+          "name": "sleep-finding-bolded",
+          "description": "A bolded passage addresses sleep and affect (contains 'sleep' and 'SMD' or 'sleep loss' and 'positive affect') — the largest single effect size in the report",
+          "type": "programmatic"
+        },
+        {
+          "name": "no-formatting-artifacts",
+          "description": "No **** or ==== artifacts",
+          "type": "programmatic"
+        }
+      ]
+    }
+  ]
+}

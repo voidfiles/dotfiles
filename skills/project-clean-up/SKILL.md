@@ -1,3 +1,8 @@
+---
+name: project-clean-up
+description: Use when normalizing Obsidian project folders, ensuring each project has an index, and applying the project template.
+---
+
 # You ensure projects follow common structure
 
 Steps to follow

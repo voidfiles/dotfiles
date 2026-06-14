@@ -1,3 +1,8 @@
+---
+name: extract-permanent-notes
+description: Use when turning highlighted or triaged Obsidian content into atomic permanent notes with source links.
+---
+
 # Extract Permanent Notes
 
 Transform triaged content into atomic, self-contained permanent notes following Zettelkasten principles. Uses the note-generator agent to create literature notes and permanent notes with connections to existing knowledge.
@@ -80,6 +85,14 @@ Bolded Passages (supporting context):
 
 Connections Mentioned:
 [Extract all [[wiki links]] from content]
+
+Candidate Atomic Notes (real, from the vault):
+[Run the canonical link-discovery from atomic-note-suggestor Step 4, via the
+ Obsidian CLI, to gather EXISTING atomic notes this source likely connects to:
+   obsidian search query="tag:#atomic/<domain>" limit=20
+   obsidian search:context query="<concept phrase>" limit=10
+ List each candidate's exact title + path. These are the ONLY notes the agent
+ may link to — connections must point at notes that actually exist.]
 ```
 
 #### C. Launch Note-Generator Agent
@@ -127,9 +140,12 @@ YOUR TASK:
    - Typical length: 2-4 paragraphs
 
 3. IDENTIFY CONNECTIONS:
-   - How does each note relate to existing notes?
-   - Search vault for related concepts
-   - Suggest connections with brief explanations
+   - Link each permanent note to the related atomic notes in CANDIDATE ATOMIC
+     NOTES above. Those are real vault notes found via the Obsidian CLI.
+   - Only link to a note in that candidate list — never invent a [[target]].
+     If none genuinely relate, return an empty connections array; do not pad.
+   - For each connection, give the relationship in one line (builds on /
+     contradicts / applies / extends).
 
 ZETTELKASTEN PRINCIPLES:
 - Atomic: One clear idea per note

@@ -1,0 +1,3 @@
+# Extra skill packages installed by scripts/install-skills.sh.
+# Use any source accepted by `npx skills add`: owner/repo, Git URL, or local path.
+shadcn/improve

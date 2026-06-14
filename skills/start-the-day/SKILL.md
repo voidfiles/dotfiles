@@ -1,3 +1,8 @@
+---
+name: start-the-day
+description: Use when running a morning planning routine from recent notes, gratitude, action items, and daily priorities.
+---
+
 # Start the Day
 
 Run a morning routine that combines gratitude practice, warm-up reflection, and daily planning based on recent notes and action items.
@@ -48,7 +53,7 @@ Ask the user to share 2-3+ things they're grateful for today. Keep it conversati
 
 ### 6. Create Daily Note
 
-Create a note at `Daily/YYYY-MM-DD.md` with this format:
+Create a note at `daily/YYYY/MM/DD/daily.md` with this format:
 
 ```markdown
 # [Day of week], [Month DD, YYYY]
@@ -92,6 +97,6 @@ Create a note at `Daily/YYYY-MM-DD.md` with this format:
 
 ## Daily Folder Setup
 
-- Check if `Daily/` folder exists, create it if needed
-- Use ISO date format for filenames: `YYYY-MM-DD.md`
-- Store in `/home/alex/Documents/Alex3/Daily/`
+- Daily notes live at `daily/{YYYY}/{MM}/{DD}/daily.md` in the vault
+- Vault root: `/Users/alex/Dropbox/obsidian/Alex3/`
+- Create the date directories if they don't exist

@@ -1,0 +1,23 @@
+{
+  "skill_name": "note-area-suggester",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "where should I put this?\n\n# 1:1 Coaching Framework\n\nNotes from reflecting on how I structure 1:1s with my direct reports. Key practices I've landed on:\n- Start with what's on their mind, not my agenda\n- Save the last 10 mins for longer-horizon career conversation\n- Keep a shared doc they can write to async\n\nI've been iterating on this for a year and it's become core to how I manage.",
+      "expected_output": "Suggests areas/coaching or areas/leadership (or areas/people-management) as the primary recommendation, since this is an ongoing practice the user actively maintains. Should NOT suggest resources/ as the primary pick. Should give a clear PARA rationale.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I just took notes on a paper about spaced repetition and how retrieval practice affects long-term memory consolidation. Lots of good research citations. Where does this go in my vault?",
+      "expected_output": "Suggests resources/productivity or areas/learning-science (if it reads as ongoing practice) as primary. Should note the areas vs resources tradeoff. Should NOT suggest projects/. Might propose a new folder like resources/learning-science if that fits better.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "where should I file this?\n\n# Prompt Engineering Patterns for LLM Evaluation\n\nA collection of patterns I've been using to evaluate LLM outputs systematically. Includes chain-of-thought prompting, criteria decomposition, and pairwise comparison templates. I use these daily at work when reviewing model outputs.",
+      "expected_output": "Suggests areas/ai-engineering (active daily practice) or resources/agent-engineering (reference patterns). Should clearly explain the areas vs resources distinction. Might note areas/llm-as-judge as a relevant existing folder.",
+      "files": []
+    }
+  ]
+}

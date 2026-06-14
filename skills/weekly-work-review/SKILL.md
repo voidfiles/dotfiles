@@ -1,3 +1,8 @@
+---
+name: weekly-work-review
+description: Use when creating a weekly work review from daily notes, meeting notes, and work-related project progress.
+---
+
 # Weekly Work Review
 
 Create a comprehensive review of the week's work activities by analyzing meeting notes, daily notes, and project progress.

@@ -315,13 +315,15 @@ tags: [relevant, topic, tags]
 
 ## Related
 
-- [[Related Note 1]]
-- [[Related Note 2]]
+- [[Existing atomic note title]] — why it relates, in one line
+- [[Another atomic note title]] — the connection, in one line
 
 ---
 
 *Extracted from [[Clippings/Original Article Title]]*
 ```
+
+Fill `## Related` using the canonical link-discovery from **atomic-note-suggestor** Step 4: find real neighbors via the Obsidian CLI (`obsidian search query="tag:#atomic/<domain>"`, `obsidian search:context query="<concept>"`), confirm fit, and link forward with a one-line reason each. Only link to notes the CLI returned; omit the block when nothing genuinely relates.
 
 ### Stage 5 Output (internal)
 

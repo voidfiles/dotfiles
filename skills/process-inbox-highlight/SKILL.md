@@ -1,223 +1,85 @@
 ---
-argument-hint: file path or folder, e.g., "Clippings/Article.md" or "daily/2026/01/"
-description: Apply Layer 1-2 progressive summarization (bold key passages, highlight essence) to inbox items. For meetings and daily notes, also extracts action items and decisions.
 name: process-inbox-highlight
+argument-hint: file path or folder, e.g., "Clippings/Article.md" or "projects/foo/research/"
+description: Apply knowledge-focused Layer 1-2 progressive summarization using multi-method analysis. Knowledge = claims + evidence + insight. Three framed LLM passes (claims, evidence, insight) run in parallel, combined with TF-IDF and TextRank graph centrality scores, to select the highest-confidence passages. Use whenever the user wants to highlight, bold, progressively summarize, or extract the essence from research files, articles, vault notes, or any document where identifying claims and evidence matters. Strongly prefer this over the basic process-inbox-highlight skill for documents with structured arguments, research findings, or evidence-backed claims.
 ---
-# Process Inbox - Highlight
 
-Apply Layer 1-2 Progressive Summarization to inbox items:
-- **Layer 1**: Bold 10-20% of key passages
-- **Layer 2**: Highlight 10-20% of bolded essence
+# process-inbox-highlight-v2
 
-For meetings and daily notes, also extract action items and decisions.
+Knowledge-focused progressive summarization. Layer 1 bolds the highest-signal passages. Layer 2 highlights the absolute essence.
 
-## Input
+**Core insight:** Knowledge = claims + evidence + insight. Three framed LLM passes triangulated against structural scores (TF-IDF + TextRank) produce much higher-confidence selections than a single "what's important?" pass.
 
-- File path or folder to process
-- Current date: !`date +%Y-%m-%d`
-
-## Frontmatter Schema
-
-Items should have or will receive this frontmatter:
-
-```yaml
 ---
-type: article|daily|meeting|asset
-highlighted: false
-extracted: false
-processed: false
-highlighted_date: null
----
-```
 
-## Process
+## Step-by-step workflow
 
-### Step 1: Determine Target Items
+### Step 1: Run the script
 
-**If file path provided:**
-```
-Process single file: ${1}
-```
-
-**If folder provided:**
 ```bash
-# Scan folder for markdown files
-Glob: ${1}/**/*.md or ${1}/*.md
-
-# Filter for unhighlighted items:
-# - Files WITHOUT highlighted: true in frontmatter
-# - OR files with highlighted: false
+uv run scripts/knowledge_highlight.py \
+  "<absolute-file-path>" \
+  --vault-root "<obsidian vault root>"
 ```
 
-### Step 2: Skip if Already Highlighted
+The script handles everything autonomously:
+- Reads the file and checks frontmatter (`highlighted: true` → skips unless `--force`)
+- Runs three LLM frames (claims, evidence, insight) in parallel via `claude_code_sdk`
+- Computes TF-IDF + TextRank structural scores
+- Scores and ranks passages by convergence across frames + structural signals
+- Applies `**bold**` for Layer 1 and `==**bold**==` for Layer 2
+- Updates frontmatter with `highlighted: true` and `highlighted_date`
 
-For each item:
+To re-process an already-highlighted file:
 
-Read frontmatter
-If highlighted: true:
-    Log: "Skipping {file} - already highlighted"
-    Continue to next item
-
-### Step 3: Detect Content Type
-
-Determine content type from path:
-
-If path contains "Clippings/" → type: article
-If path contains "daily/" → type: daily
-If path contains "Meetings/" → type: meeting
-If path contains "assets/" → type: asset (process summary.md)
-
-### Step 4: Read and Understand Content
-
-Read entire file content
-Extract main themes and topics for context
-For assets: Read the summary.md file within the asset folder
-
-### Step 5: Identify Key Passages (Layer 1 - Bold)
-
-Use LLM to identify the 10-20% most important passages.
-
-Content-type-specific guidance:
-- **article**: Focus on novel claims, evidence-backed arguments, actionable frameworks, surprising data
-- **meeting**: Focus on decisions made, commitments given, open questions, strategic directions
-- **daily**: Focus on patterns noticed, reflections, commitments to self, mood/energy shifts
-- **asset**: Focus on core thesis, key frameworks, memorable examples, actionable takeaways
-
-Guidelines:
-- Select passages that someone would want to remember in 5 years
-- Prioritize: core arguments > evidence > examples
-- Each passage should be at least 1-3 sentences, but can be longer if needed
-- Multiple paragraphs are okay if they form a coherent thought
-- Total bolded content should be ~10-20% of the content
-- Return EXACT text matches (for reliable replacement)
-- Do NOT include any text that is already bold (**text**) or highlighted (==text==)
-
-### Step 6: Apply Bolding
-
-For each passage:
-
-Find passage in content
-Replace with: **passage**
-
-If passage spans multiple paragraphs: Bold each paragraph separately: **paragraph1**\n\n**paragraph2**
-
-
-### Step 7: Identify Essence (Layer 2 - Highlight)
-
-From bolded passages, identify the absolute essence:
-
-You are helping with progressive summarization (Layer 2 - essence).
-
-From these bolded key passages, identify the 10-20% that represent the absolute core essence - the most important insights you'd want to remember.
-
-Guidelines:
-- These are the insights that matter most
-- If you could only remember 2-3 things from this content, what would they be?
-- Total highlighted should be ~10-20% of bolded content
-- Return EXACT text matches from the bolded passages
-
-### Step 8: Apply Highlighting
-
-For each essence passage in the response:
-
-Find **passage** in content
-Replace with: ==**passage**==
-
-
-### Step 9: Write Updated Content
-
-Use Edit tool to update the file with:
-- Updated frontmatter
-- Bold formatting applied
-- Highlight formatting applied
-- Summary section (for meetings/daily)
-
-## Output
-
-**For each processed file:**
-- Content updated with **bold** and ==**highlight**== formatting
-- Frontmatter updated with `highlighted: true` and date
-- Original content preserved (non-destructive - only formatting added)
-
-**Summary output:**
-```
-Highlighted X items:
-1. Clippings/Article1.md - 5 passages bolded, 2 highlighted
-2. daily/2026/01/20/notes.md - 3 passages bolded, 1 highlighted, 2 action items extracted
-...
+```bash
+uv run scripts/knowledge_highlight.py "<path>" --vault-root "<root>" --force
 ```
 
-## Important Notes
+To skip structural analysis (faster, LLM-only):
 
-### Preservation
-- **Original content always preserved** - only formatting added
-- **All existing frontmatter preserved** - only new/updated properties added
-- **Non-destructive** - can be re-run if needed
-
-### Text Matching
-- Match passages EXACTLY to avoid breaking formatting
-- Handle edge cases like quotes, special characters
-- If exact match fails, log warning and skip that passage
-
-### Large Files
-For files >10,000 words:
-```
-Warning: This file is very long ({word_count} words)
-Processing may take longer than usual.
+```bash
+uv run scripts/knowledge_highlight.py "<path>" --vault-root "<root>" --fast
 ```
 
-### Already Formatted Content
-- Skip text that is already bold or highlighted
-- Don't double-apply formatting
+### Step 2: Report to the user
 
-## Edge Cases
+Tell the user:
+- File processed (or skipped/failed, with reason)
+- How many passages were bolded (Layer 1) and highlighted (Layer 2)
 
-### Missing Frontmatter
-```
-File has no frontmatter
-
-Create frontmatter section with default values:
 ---
-type: {detected from path}
-highlighted: true
-extracted: false
-processed: false
-highlighted_date: {today}
+
+## Content type guidance
+
+Detected automatically from the file path:
+
+| Path contains | Type | Focus |
+|---|---|---|
+| `Clippings/` | article | Transferable knowledge, novel ideas, data |
+| `daily/` | daily | Reflections, patterns, commitments |
+| `Meetings/` | meeting | Decisions, commitments, open questions |
+| `assets/` | asset | Core frameworks, central arguments |
+| anything else | unknown | General knowledge extraction |
+
 ---
-```
 
-### Re-processing Request
-```
-File already has highlighted: true
+## Output format
 
-Ask user: "Re-highlight this item? This will replace existing bold/highlight formatting. (y/n)"
-If yes:
-  - Remove existing **bold** and ==highlight== formatting
-  - Re-process
-  - Add reprocessed_date to frontmatter
-```
+- Layer 1: `**passage**`
+- Layer 2: `==**passage**==`
+- Frontmatter updated: `highlighted: true`, `highlighted_date: YYYY-MM-DD`
 
-### No Good Passages Found
-```
-LLM couldn't identify meaningful passages
+---
 
-Log: "No key passages identified for {file}. Content may be too short or unclear."
-Set highlighted: true anyway (to avoid re-processing)
-Add note to frontmatter: highlight_note: "No key passages identified"
-```
+## Folder processing
 
-### Passage Not Found in Content
-```
-Passage from LLM response doesn't match content exactly
+If a folder path is given, pass the folder path directly — the script globs `**/*.md` and processes each file, skipping already-highlighted ones. A summary is printed at the end.
 
-Log: "Warning: Could not find passage in content: {first 50 chars}..."
-Skip that passage, continue with others
-```
+---
 
-### Asset Files
-```
-For assets/, process the summary.md file:
-assets/{name}/summary.md
+## Edge cases
 
-Do NOT process other files in the asset folder (chunks, original, etc.)
-```
+**File too short:** Fewer than 3 content paragraphs → frontmatter updated with `highlighted: true`, logged as skipped.
+
+**Assets:** The script automatically processes `summary.md` inside the asset folder if the path points to an asset directory.

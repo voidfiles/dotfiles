@@ -1,3 +1,8 @@
+---
+name: update-project-index
+description: Use when refreshing the Obsidian project index, reviewing recent project activity, or writing weekly project status updates.
+---
+
 # Update Project Index
 
 This skill performs a weekly review of all projects, writes updates for each, and refreshes the project index.

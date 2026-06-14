@@ -1,0 +1,23 @@
+{
+  "skill_name": "atomic-note-suggestor",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I just finished reading a research report on atomic notes and want to distill it into atomic notes for my vault. Here's the file: /Users/alex/.local/share/dotfiles/skills/atomic-note-suggestor-workspace/fixtures/atomic-notes-research-report.md\n\nCan you suggest atomic notes from it?",
+      "expected_output": "3-7 atomic note drafts, each with a concept-oriented title, self-contained body, #atomic/{idea} primary tag, and additional domain tags. Notes should cover distinct ideas from the report, not just restate sections.",
+      "files": ["/Users/alex/.local/share/dotfiles/skills/atomic-note-suggestor-workspace/fixtures/atomic-notes-research-report.md"]
+    },
+    {
+      "id": 1,
+      "prompt": "I was just reading about Conway's Law and how it means your software architecture will mirror your org structure. Also learned that the inverse isn't always true — you can't reliably fix architecture by reorganizing the team. And there's this related idea called the Inverse Conway Maneuver where you deliberately shape the org to produce the architecture you want. Can you suggest some atomic notes from this?",
+      "expected_output": "2-4 atomic note drafts covering the distinct ideas: Conway's Law itself, the asymmetry of the inverse, and possibly the Inverse Conway Maneuver as a deliberate strategy. Each note should be self-contained with proper #atomic/ tags.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Suggest atomic notes from this clipping: /Users/alex/Dropbox/obsidian/Alex3/Clippings/🔮 Seven lessons from building with AI.md",
+      "expected_output": "3-7 atomic notes from the clipping content. Each should have a concept-oriented title (not source-bound), self-contained body, #atomic/{idea} tag, and relevant domain tags like #ai, #llm, #software-engineering.",
+      "files": ["/Users/alex/Dropbox/obsidian/Alex3/Clippings/🔮 Seven lessons from building with AI.md"]
+    }
+  ]
+}

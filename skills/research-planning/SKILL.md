@@ -1,5 +1,6 @@
+---
 name: research-planning
-description: Pre-flight research planning: clarify scope, assess complexity, choose approach, decompose into sub-questions. Run before any research task.
+description: Use when planning a research task, clarifying scope, assessing complexity, or decomposing a question into sub-questions.
 ---
 
 You are executing a pre-flight research planning step. Before any search or retrieval begins, produce a research brief that governs the rest of the workflow.

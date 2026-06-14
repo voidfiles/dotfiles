@@ -1,3 +1,9 @@
+---
+created: YYYY-MM-DD
+type: project
+status: active
+description: "One to two sentence description of what this project is and what it aims to produce."
+---
 # [Project Name] - Project Home
 
 ## Executive Summary

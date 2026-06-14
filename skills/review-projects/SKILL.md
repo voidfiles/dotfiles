@@ -1,3 +1,8 @@
+---
+name: review-projects
+description: Use when reviewing open Obsidian projects, creating weekly status updates, or identifying stale projects for archival.
+---
+
 # Review Projects
 
 Review all open projects, generate weekly status updates, and identify stale projects that should be archived.

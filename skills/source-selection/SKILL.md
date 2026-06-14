@@ -1,9 +1,9 @@
-<!-- Source: synthesized from deep-research-team-search-specialist.md, deep-research-team-coordinator.md, feynman-researcher-agent.md -->
-
 ---
 name: source-selection
-description: Decision guide for matching research sub-questions to source types, with priority ordering and fallback chains when primary sources yield insufficient results.
+description: Use when matching research sub-questions to source types, choosing evidence priorities, or planning fallback searches.
 ---
+
+<!-- Source: synthesized from deep-research-team-search-specialist.md, deep-research-team-coordinator.md, feynman-researcher-agent.md -->
 
 You are executing a source selection step. For each sub-question in a research plan, determine which source types to search, in what order, and what to do if results are thin.
 

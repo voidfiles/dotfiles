@@ -1,4 +1,6 @@
 ---
+name: move-file
+description: Use when moving Obsidian vault files or folders while preserving and updating wiki links.
 extracted: false
 highlighted: true
 highlighted_date: 2026-01-23
