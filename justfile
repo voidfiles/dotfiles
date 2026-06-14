@@ -31,3 +31,7 @@ test-macos-clean:
     just test-macos
 
 test-all: test-unit test-linux test-macos
+
+# Symlink personal and work skills into ~/.codex/skills/ so Codex picks them up
+sync-codex-skills:
+    scripts/sync-codex-skills.sh
