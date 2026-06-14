@@ -41,10 +41,12 @@ _run_update() {
   bash "$DOTFILES_DIR/scripts/update.sh"
 }
 
-@test "update.sh appends router line to .zshrc exactly once on first run" {
+@test "update.sh appends router line to shell rc files exactly once on first run" {
   run _run_update
   assert_success
   run grep -cF 'source "$HOME/.local/share/dotfiles/config/router.sh"' "$HOME/.zshrc"
+  assert_output "1"
+  run grep -cF 'source "$HOME/.local/share/dotfiles/config/router.sh"' "$HOME/.bashrc"
   assert_output "1"
 }
 
@@ -54,6 +56,8 @@ _run_update() {
   run _run_update
   assert_success
   run grep -cF 'source "$HOME/.local/share/dotfiles/config/router.sh"' "$HOME/.zshrc"
+  assert_output "1"
+  run grep -cF 'source "$HOME/.local/share/dotfiles/config/router.sh"' "$HOME/.bashrc"
   assert_output "1"
 }
 

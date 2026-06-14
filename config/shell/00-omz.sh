@@ -1,8 +1,8 @@
 
-if [ "$IS_ZSH" = "1" ]; then
+if [ "${IS_ZSH:-0}" = "1" ] && [ -r "$HOME/.oh-my-zsh/oh-my-zsh.sh" ]; then
     # oh-my-zsh
     export ZSH="$HOME/.oh-my-zsh"
     ZSH_THEME="robbyrussell"
     plugins=(git direnv zsh-syntax-highlighting zsh-autosuggestions)
-    source $ZSH/oh-my-zsh.sh
+    source "$ZSH/oh-my-zsh.sh"
 fi

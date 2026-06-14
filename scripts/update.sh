@@ -47,19 +47,13 @@ if [[ "${IS_LINUX:-0}" == "1" ]] && [[ "${IS_ZSH:-0}" == "1" ]] && command -v zs
   fi
 fi
 
-if [[ "${IS_ZSH:-0}" == "1" ]]; then
-  rc_file="$HOME/.zshrc"
-else
-  rc_file="$HOME/.bashrc"
-fi
-
 router_line='source "$HOME/.local/share/dotfiles/config/router.sh"'
-touch "$rc_file"
-if ! grep -qxF "$router_line" "$rc_file"; then
-  printf '\n%s\n' "$router_line" >> "$rc_file"
-fi
-
-
+for rc_file in "$HOME/.bashrc" "$HOME/.zshrc"; do
+  touch "$rc_file"
+  if ! grep -qxF "$router_line" "$rc_file"; then
+    printf '\n%s\n' "$router_line" >> "$rc_file"
+  fi
+done
 
 ensure_package gettext
 ensure_package jq
@@ -150,7 +144,5 @@ done
 if ! command -v claude >/dev/null 2>&1 && ! [[ -x "$HOME/.local/bin/claude" ]]; then
   curl -fsSL https://claude.ai/install.sh | bash
 fi
-
-
 
 

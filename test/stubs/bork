@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 printf 'bork %s\n' "$*" >>"$STUB_LOG"
-exit 0
+if [[ -n "${BORK_STUB_OUTPUT:-}" ]]; then
+  printf '%b\n' "$BORK_STUB_OUTPUT"
+fi
+exit "${BORK_STUB_EXIT:-0}"

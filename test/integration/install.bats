@@ -56,15 +56,11 @@ setup() {
   assert_equal "$pass" "1"
 }
 
-@test "router line in rc file appears exactly once" {
-  local rc_file
-  if [[ "${SHELL_TO_USE:-zsh}" == "zsh" ]]; then
-    rc_file="$HOME/.zshrc"
-  else
-    rc_file="$HOME/.bashrc"
-  fi
+@test "router line in shell rc files appears exactly once" {
   local line='source "$HOME/.local/share/dotfiles/config/router.sh"'
-  run grep -cF "$line" "$rc_file"
+  run grep -cF "$line" "$HOME/.zshrc"
+  assert_output "1"
+  run grep -cF "$line" "$HOME/.bashrc"
   assert_output "1"
 }
 
@@ -103,14 +99,10 @@ setup() {
   run bash "$HOME/.local/share/dotfiles/scripts/update.sh"
   assert_success
 
-  local rc_file
-  if [[ "${SHELL_TO_USE:-zsh}" == "zsh" ]]; then
-    rc_file="$HOME/.zshrc"
-  else
-    rc_file="$HOME/.bashrc"
-  fi
   local line='source "$HOME/.local/share/dotfiles/config/router.sh"'
-  run grep -cF "$line" "$rc_file"
+  run grep -cF "$line" "$HOME/.zshrc"
+  assert_output "1"
+  run grep -cF "$line" "$HOME/.bashrc"
   assert_output "1"
 
   if [[ "${USE_1_PASSWORD:-0}" == "1" && "$(uname)" == "Linux" ]]; then

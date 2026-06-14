@@ -48,6 +48,27 @@ EOF
   stub_assert_called bork 'do' ok apt direnv
 }
 
+@test "ensure_package treats bork successful change as success" {
+  _stub_uname "Linux"
+  export BORK_STUB_EXIT=1
+  export BORK_STUB_OUTPUT=$'verifying install: apt jq\n* success'
+  source "$DOTFILES_REPO_ROOT/scripts/util.sh"
+  run ensure_package jq
+  assert_success
+  assert_output --partial '* success'
+  stub_assert_called bork 'do' ok apt jq
+}
+
+@test "ensure_package preserves bork failures" {
+  _stub_uname "Linux"
+  export BORK_STUB_EXIT=1
+  export BORK_STUB_OUTPUT='* install failed'
+  source "$DOTFILES_REPO_ROOT/scripts/util.sh"
+  run ensure_package jq
+  assert_failure
+  assert_output --partial '* install failed'
+}
+
 @test "ensure_package errors on unsupported OS" {
   _stub_uname "Plan9"
   rm -f "$DOTFILES_REPO_ROOT/test/stubs/apt-get"
