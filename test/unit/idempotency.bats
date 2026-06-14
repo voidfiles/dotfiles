@@ -87,3 +87,31 @@ _run_update() {
   run diff "$HOME/.claude/CLAUDE.md" "$DOTFILES_DIR/config/claude/CLAUDE.md"
   assert_success
 }
+
+@test "update.sh installs local and configured skills for Claude Code and Codex" {
+  run _run_update
+  assert_success
+
+  stub_assert_called npx --yes skills add "$DOTFILES_DIR/skills" --skill '*' --global --agent claude-code --agent codex --yes
+  stub_assert_called npx --yes skills add shadcn/improve --skill '*' --global --agent claude-code --agent codex --yes
+}
+
+@test "update.sh removes old personal Claude marketplace cache entries" {
+  mkdir -p "$HOME/.claude/plugins"
+  printf '{"personal-marketplace":{"installLocation":"old"},"keep-marketplace":{"installLocation":"keep"}}\n' \
+    > "$HOME/.claude/plugins/known_marketplaces.json"
+  printf '{"version":2,"plugins":{"personal-skills@personal-marketplace":[{"installPath":"old"}],"keep@marketplace":[{"installPath":"keep"}]}}\n' \
+    > "$HOME/.claude/plugins/installed_plugins.json"
+
+  run _run_update
+  assert_success
+
+  run jq -e 'has("personal-marketplace") | not' "$HOME/.claude/plugins/known_marketplaces.json"
+  assert_success
+  run jq -e 'has("keep-marketplace")' "$HOME/.claude/plugins/known_marketplaces.json"
+  assert_success
+  run jq -e '.plugins | has("personal-skills@personal-marketplace") | not' "$HOME/.claude/plugins/installed_plugins.json"
+  assert_success
+  run jq -e '.plugins | has("keep@marketplace")' "$HOME/.claude/plugins/installed_plugins.json"
+  assert_success
+}

@@ -32,6 +32,6 @@ test-macos-clean:
 
 test-all: test-unit test-linux test-macos
 
-# Symlink personal and work skills into ~/.codex/skills/ so Codex picks them up
-sync-codex-skills:
-    scripts/sync-codex-skills.sh
+# Install local and configured skills into Claude Code and Codex
+install-skills *sources:
+    scripts/install-skills.sh {{sources}}

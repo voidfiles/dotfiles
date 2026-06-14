@@ -89,6 +89,7 @@ ln -s "$DOTFILES_DIR/config/claude/workflows" "$HOME/.claude/workflows"
 # upserts any "directory" source entries into known_marketplaces.json.
 _km="$HOME/.claude/plugins/known_marketplaces.json"
 [[ -f "$_km" ]] || echo '{}' > "$_km"
+jq 'del(."personal-marketplace")' "$_km" > "${_km}.tmp" && mv "${_km}.tmp" "$_km"
 
 _now="$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")"
 _patch=$(jq -r --arg now "$_now" '
@@ -113,6 +114,7 @@ jq --argjson patch "$_patch" '. * $patch' "$_km" > "${_km}.tmp" && mv "${_km}.tm
 # entries it didn't create.
 _ip="$HOME/.claude/plugins/installed_plugins.json"
 [[ -f "$_ip" ]] || echo '{"version":2,"plugins":{}}' > "$_ip"
+jq 'del(.plugins["personal-skills@personal-marketplace"])' "$_ip" > "${_ip}.tmp" && mv "${_ip}.tmp" "$_ip"
 
 jq -r '
   .extraKnownMarketplaces // {} | to_entries[]
@@ -148,10 +150,12 @@ jq -r '
   done
 done
 
+SKILLS_SOURCES_FILE="${SKILLS_SOURCES_FILE:-$DOTFILES_DIR/config/skills/sources.txt}" \
+  "$DOTFILES_DIR/scripts/install-skills.sh"
+
 if ! command -v claude >/dev/null 2>&1 && ! [[ -x "$HOME/.local/bin/claude" ]]; then
   curl -fsSL https://claude.ai/install.sh | bash
 fi
-
 
 
 
