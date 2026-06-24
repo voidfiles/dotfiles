@@ -8,11 +8,22 @@ curl "https://raw.githubusercontent.com/voidfiles/dotfiles/refs/heads/main/scrip
 
 ## Configuration
 
-
 ```
 touch ~/.local_config.sh
 echo "export USE_1_PASSWORD=0" >> ~/.local_config.sh
 curl "https://raw.githubusercontent.com/voidfiles/dotfiles/refs/heads/main/scripts/boot.sh" | bash
+```
+
+Per-machine Obsidian vault overrides can also live in `~/.local_config.sh`:
+
+```
+export OBSIDIAN_ROOT="$HOME/Documents/Alex3"
+```
+
+For auto-detection without pinning one path, set a colon-separated candidate list:
+
+```
+export OBSIDIAN_ROOT_CANDIDATES="$HOME/Documents/Alex3:$HOME/Dropbox/obsidian/Alex3"
 ```
 
 ## Development
