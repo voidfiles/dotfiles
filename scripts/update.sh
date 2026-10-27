@@ -70,6 +70,10 @@ fi
 
 cp "$DOTFILES_DIR/config/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 
+codex_dir="${CODEX_HOME:-$HOME/.codex}"
+mkdir -p "$codex_dir"
+cp "$DOTFILES_DIR/config/codex/AGENTS.md" "$codex_dir/AGENTS.md"
+
 if [[ -L "$HOME/.claude/workflows" ]]; then
   rm "$HOME/.claude/workflows"
 elif [[ -d "$HOME/.claude/workflows" ]]; then

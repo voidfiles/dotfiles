@@ -26,6 +26,10 @@ For auto-detection without pinning one path, set a colon-separated candidate lis
 export OBSIDIAN_ROOT_CANDIDATES="$HOME/Documents/Alex3:$HOME/Dropbox/obsidian/Alex3"
 ```
 
+Global Codex instructions live in `config/codex/AGENTS.md`. Bootstrap and
+`just update` install them to `${CODEX_HOME:-$HOME/.codex}/AGENTS.md`.
+Edit the source file and run `just update` to apply changes.
+
 ## Development
 
 ### Cloning
