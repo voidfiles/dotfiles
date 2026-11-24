@@ -1,0 +1,3 @@
+interface:
+  display_name: "Speedup"
+  short_description: "Diagnose bottlenecks and verify real speed gains"
